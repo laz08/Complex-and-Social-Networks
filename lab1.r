@@ -1,4 +1,6 @@
-# install.packages("igraph")
+install.packages("igraph")
+install.packages("ggplot2")
+install.packages("rlang")
 library(igraph)
 library(ggplot2)
 
@@ -42,7 +44,8 @@ ws_generator <- function(dim, S, nie){
      geom_point(data = ws_graph, aes(x=p,y=L, colour = "L(p)/L(0)")) +
       labs(title = "WS model metrics\n", x = "p", y = "", color = "\n") +
       theme(axis.text.x=element_text(angle = 90, hjust = 0)) +
-      scale_x_discrete(labels = abbreviate)
+      scale_x_discrete(labels = abbreviate) +
+      theme(plot.title = element_text(hjust = 0.5))
   
 }
 
