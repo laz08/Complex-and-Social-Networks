@@ -32,7 +32,7 @@ ws_generator <- function(dim, S, nie){
     L[i] <- (average_L/10)/L_base
     C[i] <- (average_C/10)/C_base
   }
-  values <- cbind(L,C) # col 1 = diameter, col 2 = transitivity
+  ws_graph <- cbind(L,C) # col 1 = diameter, col 2 = transitivity
   
   # Create Plot
   y <- as.factor(10^(seq(log10(.0001),0,.2)))
@@ -43,6 +43,23 @@ ws_generator <- function(dim, S, nie){
 }
 
 ws_generator(dim, S, nie)
+
+# Function to create ER graphs and plot average shortest path
+
+er_generator <- function(){
+  
+  iters = c(10,50,100,500,1000,10000)
+  path <- c()
+  
+  for(i in iters){
+      n = i # Number of vertices of graph
+      e = 0.2
+      p = ((1+e)*log(n))/n #probability of edge between two arbitrary edges
+      er <- erdos.renyi.game(n,p)
+      path <- append(path, average.path.length(er))
+  }
+  
+}
 
 
 
