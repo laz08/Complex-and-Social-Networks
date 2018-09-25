@@ -1,5 +1,6 @@
-install.packages("igraph")
+# install.packages("igraph")
 library(igraph)
+library(ggplot2)
 
 # Parameters
 dim = 1
@@ -32,13 +33,16 @@ ws_generator <- function(dim, S, nie){
     L[i] <- (average_L/10)/L_base
     C[i] <- (average_C/10)/C_base
   }
-  ws_graph <- cbind(L,C) # col 1 = diameter, col 2 = transitivity
   
-  # Create Plot
-  y <- as.factor(10^(seq(log10(.0001),0,.2)))
-  plot(y, ws_graph[,1])
-  par(new = 'true')
-  plot(y,ws_graph[,2])
+   # Plot the data
+  x = as.factor(x)
+  ws_graph = data.frame(p = x, L, C)
+  ggplot(ws_graph, aes(x=p, y=C)) +
+    geom_point(data = ws_graph, aes(x=p,y=C, colour="C(p)/C(0)")) +
+     geom_point(data = ws_graph, aes(x=p,y=L, colour = "L(p)/L(0)")) +
+      labs(title = "WS model metrics\n", x = "p", y = "", color = "\n") +
+      theme(axis.text.x=element_text(angle = 90, hjust = 0)) +
+      scale_x_discrete(labels = abbreviate)
   
 }
 
@@ -48,7 +52,7 @@ ws_generator(dim, S, nie)
 
 er_generator <- function(){
   
-  iters = c(10,50,100,500,1000,10000)
+  iters = c(10,50,100,500,1000,10000) #, 200000) #, 400000)
   path <- c()
   
   for(i in iters){
@@ -59,8 +63,9 @@ er_generator <- function(){
       path <- append(path, average.path.length(er))
   }
   
+  (path)
 }
-
+er_generator()
 
 
 
