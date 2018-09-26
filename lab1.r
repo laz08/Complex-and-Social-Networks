@@ -1,20 +1,25 @@
-# install.packages("igraph")
-library(igraph)
-library(ggplot2)
+# Load and install necessary packages
+requiredPackages <- c("igraph", "ggplot2")
 
-# Parameters
-dim = 1
-S = 500
-nie = 4
+for (pac in requiredPackages) {
+    if(!require(pac,  character.only=TRUE)){
+        install.packages(pac, repos="http://cran.rstudio.com")
+        library(pac,  character.only=TRUE)
+    } 
+}
+rm(pac)
+rm(requiredPackages)
 
-# WS base numbers to normalize 
-L_base <- average.path.length(watts.strogatz.game(dim, S, nie, 0))
-C_base <- transitivity(watts.strogatz.game(dim, S, nie, 0))
-
-
+##################################
+# 1./
+# 
 # Function to create random WS graphs and plot transitivity and diameter
 ws_generator <- function(dim, S, nie){
   
+  # WS base numbers to normalize 
+  L_base <- average.path.length(watts.strogatz.game(dim, S, nie, 0))
+  C_base <- transitivity(watts.strogatz.game(dim, S, nie, 0))
+    
   x <- 10^(seq(log10(.0001),0,.2))
   iters <- length(x)
   L <- numeric(iters)
@@ -34,25 +39,35 @@ ws_generator <- function(dim, S, nie){
     C[i] <- (average_C/10)/C_base
   }
   
-   # Plot the data
-  x = as.factor(x)
-  ws_graph = data.frame(p = x, L, C)
+  # Prepare data for plotting
+  ws_graph = data.frame(p = as.factor(x), L, C)
+  
+  # Plot the data
   ggplot(ws_graph, aes(x=p, y=C)) +
-    geom_point(data = ws_graph, aes(x=p,y=C, colour="C(p)/C(0)")) +
-     geom_point(data = ws_graph, aes(x=p,y=L, colour = "L(p)/L(0)")) +
+      geom_point(aes(x=p,y=C, colour="C(p)/C(0)")) +
+      geom_point(aes(x=p,y=L, colour = "L(p)/L(0)")) +
       labs(title = "WS model metrics\n", x = "p", y = "", color = "\n") +
       theme(axis.text.x=element_text(angle = 90, hjust = 0)) +
       scale_x_discrete(labels = abbreviate)
   
 }
 
+# Parameters
+dim = 1
+S = 500
+nie = 4
+
 ws_generator(dim, S, nie)
 
-# Function to create ER graphs and plot average shortest path
 
+
+##################################
+# 2./
+# 
+# Function to create ER graphs and plot average shortest path
 er_generator <- function(){
   
-  iters = c(10,50,100,500,1000,10000) #, 200000) #, 400000)
+  iters = c(5,10,15,30,50,100,500,1000,10000,50000)
   path <- c()
   
   for(i in iters){
@@ -63,10 +78,22 @@ er_generator <- function(){
       path <- append(path, average.path.length(er))
   }
   
-  (path)
-}
-er_generator()
+  # One possible result, since it takes a while to compute...:
+  # 1.666667 1.666667 2.351648 3.110837 2.713469 2.677778 3.336160 3.510851 4.102915 4.515819
+  
+  # Prepare data for plotting
+  er_graph = data.frame(N = as.factor(iters), Path = path)
+  
+  
+  # Plot the data
+  ggplot(er_graph, aes(x=N, y=Path, group = 1)) +
+      geom_line(colour = "Gray", show.legend=F) +
+      geom_point(colour = "Blue", show.legend=F) + 
+      labs(title = "ER model avg. shortest path", x = "num nodes", y = "Avg. shortest path")
 
+}
+
+er_generator()
 
 
 
