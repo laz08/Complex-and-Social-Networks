@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Load and install necessary packages
 requiredPackages <- c("igraph", "ggplot2")
 
@@ -48,7 +49,8 @@ ws_generator <- function(dim, S, nie){
       geom_point(aes(x=p,y=L, colour = "L(p)/L(0)")) +
       labs(title = "WS model metrics\n", x = "p", y = "", color = "\n") +
       theme(axis.text.x=element_text(angle = 90, hjust = 0)) +
-      scale_x_discrete(labels = abbreviate)
+      scale_x_discrete(labels = abbreviate) +
+      theme(plot.title = element_text(hjust = 0.5))
   
 }
 
@@ -82,8 +84,7 @@ er_generator <- function(){
   # 1.666667 1.666667 2.351648 3.110837 2.713469 2.677778 3.336160 3.510851 4.102915 4.515819
   
   # Prepare data for plotting
-  er_graph = data.frame(N = as.factor(iters), Path = path)
-  
+  er_graph = data.frame(N = iters, Path = path)
   
   # Plot the data
   ggplot(er_graph, aes(x=N, y=Path, group = 1)) +
