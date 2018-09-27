@@ -69,7 +69,7 @@ ws_generator(dim, S, nie)
 # Function to create ER graphs and plot average shortest path
 er_generator <- function(){
   
-  iters = c(5,10,15,30,50,100,500,1000 , 5000, 15000)
+  iters = c(5,10,15,30,50,100,500,1000 , 10000, 20000)
   path <- c()
   
   for(i in iters){
