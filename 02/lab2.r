@@ -18,7 +18,7 @@ mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
 
 
 # Remove nodes of out-degree 0 (k=0)
-df <-as.data.frame(degree_sequence[!(degree_sequence$V1==0),])
+degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 
 # Create table of degree statistics
@@ -64,37 +64,72 @@ get_C <- function(x) { C = 0
                         return(C)
                       }
 
-# Estimating parameters with log-likelihood (Maximum likelihood estimation)
-# TODO
 
+########### Minus Log-likelihood Functions ########### 
+x <- degree_sequence$V1
+
+# Displaced Poisson function
+minus_log_likelihood_poisson <- function(lambda){
+  -(sum(x) * log(lambda) - length(x)*(lambda + log(1 - exp(-lambda))) - get_C(x)) 
+}
+
+# Displaced Geometric function
+minus_log_likelihood_geometric <- function(q){
+  -(sum(x) - length(x) * log(1 - q)) - length(x) * log(q)
+}
 
 # Minus log-likelihood function (minus_log_likelihood = -L)
 minus_log_likelihood_zeta <- function(gamma){ 
   length(x) * log(zeta(gamma)) + gamma * sum(log(x))
 }
 
-mle_zeta <- mle(minus_log_likelihood_zeta, 
+# Minus log-likelihood zeta function with lambda - 2
+minus_log_likelihood_zeta2 <- function(){
+  2 * sum(log(x)) + length(x) * log(pi^2/6)
+}
+
+# Minus log-likelihood right-truncated zeta
+minus_log_likelihood_zeta3 <- function(gamma, k){
+  gamma * sum(log(x)) + length(x) * log(sum(seq(1,k)^-gamma)) # TODO - correct???
+}
+
+
+
+###########  Estimating log-likelihood parameters ########### 
+mle_poisson <- mle(minus_log_likelihood_poisson, 
+                start = list(lambda = sum(x)/length(x)),
+                method = "L-BFGS-B",
+                lower = c(1.00000001))
+attributes(summary(mle_poisson))$coef[1]
+
+mle_geometric <- mle(minus_log_likelihood_geometric, 
+                start = list(q = length(x)/sum(x)),
+                method = "L-BFGS-B",
+                lower = c(.00001), # TODO - is this correct? 
+                upper = c(.99999)) # TODO - is this correct? 
+attributes(summary(mle_zeta))$coef[1]
+
+mle_zeta <- mle(minus_log_likelihood_zeta2, 
                 start = list(gamma = 2),
                 method = "L-BFGS-B",
                 lower = c(1.00000001))
-summary(mle_zeta)
-attributes(summary(mle_zeta))
+
+attributes(summary(mle_zeta))$coef[1]
+
+mle_zeta2 <- mle(minus_log_likelihood_zeta,  # TODO fix everything
+                start = list(gamma = 2),
+                method = "L-BFGS-B",
+                lower = c(1.00000001))
+
+attributes(summary(mle_zeta))$coef[1]
+
+mle_zeta3 <- mle(minus_log_likelihood_zeta3, # TODO check that it works
+                start = list(gamma = 2, k = length(x)),
+                method = "L-BFGS-B",
+                lower = c(1.00000001, length(x)))
+
 attributes(summary(mle_zeta))$coef[1]
 
 
-# Displaced Poisson function
-x <- degree_sequence$V1  
-lambda_0 = sum(x)/length(x) # Strating Lambda for trial 
-poisson <- function(lambda){
-  -(sum(x) * log(lambda) - length(x)*(lambda + log(1 - exp(-lambda))) - get_C(x))
-}
-poisson(lambda_0)
 
-mle_poisson <- mle(poisson, 
-                start = list(lambda = lambda_0),
-                method = "L-BFGS-B",
-                lower = c(1.00000001))
-summary(mle_poisson)
-attributes(summary(mle_poisson))
-attributes(summary(mle_poisson))$coef[1]
 
