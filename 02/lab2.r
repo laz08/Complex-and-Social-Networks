@@ -9,7 +9,15 @@ rm(pac)
 rm(requiredPackages)
 
 # Set WD and load data
-setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/Lab2")
+wd = getwd()
+if(grepl("nora", wd)) {
+    setwd("~/git/csn-labs/02")
+} else {
+  setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/Lab2")
+}
+rm(wd)
+
+
 degree_sequence = read.table("./data/English_out-degree_sequence.txt",
                              header = FALSE)
 num_nodes <- nrow(degree_sequence)
@@ -22,7 +30,7 @@ degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 
 # Create table of degree statistics
-source = read.table("list.txt", header = TRUE, as.is = c("language","file"))
+source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
      
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
@@ -32,7 +40,12 @@ write_summary <- function(language,file) {
 
 create_sum_table <- function(){
   
-  temp_df <- data.table("language" = character(), "N" = numeric(), "Maximum Degree" = numeric(), "M/N" = numeric(), "N/M" = numeric(), stringsAsFactors = FALSE)
+  temp_df <- data.table("language" = character(),
+                        "N" = numeric(),
+                        "Maximum Degree" = numeric(),
+                        "M/N" = numeric(),
+                        "N/M" = numeric(),
+                        stringsAsFactors = FALSE)
   
   for (x in 1:nrow(source)){
     file <- source$file[x]
@@ -43,13 +56,14 @@ create_sum_table <- function(){
   return(temp_df)
 }               
                     
-summary_table <- create_sum_table()      
+(summary_table <- create_sum_table())
 
 # Barplots of data
 degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
 degree_spectrum = table(degree_sequence)
 barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices")
 barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
+barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
 
 # Variables to be used in distribution functions
 get_MP <- function(x) { return(sum(log(x)))}
@@ -65,71 +79,93 @@ get_C <- function(x) { C = 0
                       }
 
 
-########### Minus Log-likelihood Functions ########### 
-x <- degree_sequence$V1
+get_H <- function(k, gamma) {
+    # TODO: Check H
+    return(sum(seq(1, k)^(-gamma)))
+}
 
+########### Minus Log-likelihood Functions ########### 
+
+# Basic metrics
+x <- degree_sequence$V1
+M <- sum(x)
+N <- length(x)
+
+    
+    
 # Displaced Poisson function
 minus_log_likelihood_poisson <- function(lambda){
-  -(sum(x) * log(lambda) - length(x)*(lambda + log(1 - exp(-lambda))) - get_C(x)) 
+  -(M * log(lambda) - N*(lambda + log(1 - exp(-lambda))) - get_C(x)) 
 }
 
 # Displaced Geometric function
 minus_log_likelihood_geometric <- function(q){
-  -(sum(x) - length(x) * log(1 - q)) - length(x) * log(q)
+  -(M - N * log(1 - q)) - (N * log(q))
 }
 
 # Minus log-likelihood function (minus_log_likelihood = -L)
 minus_log_likelihood_zeta <- function(gamma){ 
-  length(x) * log(zeta(gamma)) + gamma * sum(log(x))
+    gamma * get_MP(x) + N * log(zeta(gamma))
 }
 
 # Minus log-likelihood zeta function with lambda - 2
-minus_log_likelihood_zeta2 <- function(){
-  2 * sum(log(x)) + length(x) * log(pi^2/6)
+minus_log_likelihood_zeta2 <- function(gamma){
+  2 * get_MP(x) + N * log(pi^2/6)
 }
 
 # Minus log-likelihood right-truncated zeta
 minus_log_likelihood_zeta3 <- function(gamma, k){
-  gamma * sum(log(x)) + length(x) * log(sum(seq(1,k)^-gamma)) # TODO - correct???
+  gamma * get_MP(x) + N * log(get_H(k, gamma))
 }
 
 
 
 ###########  Estimating log-likelihood parameters ########### 
 mle_poisson <- mle(minus_log_likelihood_poisson, 
-                start = list(lambda = sum(x)/length(x)),
+                start = list(lambda = M/N),
                 method = "L-BFGS-B",
                 lower = c(1.00000001))
 attributes(summary(mle_poisson))$coef[1]
 
 mle_geometric <- mle(minus_log_likelihood_geometric, 
-                start = list(q = length(x)/sum(x)),
+                start = list(q = N/M),
                 method = "L-BFGS-B",
-                lower = c(.00001), # TODO - is this correct? 
-                upper = c(.99999)) # TODO - is this correct? 
-attributes(summary(mle_zeta))$coef[1]
+                lower = c(0.00001), # TODO - is this correct? 
+                upper = c(0.99)) # TODO - is this correct? 
+            #Laura: Do not go above 0.99 or it will give an error 
+            #'  non-finite finite-difference value [1]
 
-mle_zeta <- mle(minus_log_likelihood_zeta2, 
+attributes(summary(mle_geometric))$coef[1]
+
+mle_zeta <- mle(minus_log_likelihood_zeta, 
                 start = list(gamma = 2),
                 method = "L-BFGS-B",
                 lower = c(1.00000001))
 
 attributes(summary(mle_zeta))$coef[1]
 
-mle_zeta2 <- mle(minus_log_likelihood_zeta,  # TODO fix everything
+
+# TODO: Check what to do with zeta 2
+mle_zeta2 <- mle(minus_log_likelihood_zeta2,
+#mle_zeta2 <- mle(minus_log_likelihood_zeta,
                 start = list(gamma = 2),
                 method = "L-BFGS-B",
                 lower = c(1.00000001))
 
-attributes(summary(mle_zeta))$coef[1]
+attributes(summary(mle_zeta2))$coef[1]
 
-mle_zeta3 <- mle(minus_log_likelihood_zeta3, # TODO check that it works
-                start = list(gamma = 2, k = length(x)),
+
+# TODO: Check warning below. Doesn't look good.
+mle_zeta3 <- mle(minus_log_likelihood_zeta3, 
+                start = list(gamma = 2, k = N),
                 method = "L-BFGS-B",
                 lower = c(1.00000001, length(x)))
 
-attributes(summary(mle_zeta))$coef[1]
+attributes(summary(mle_zeta3))$coef[1]
 
+
+
+### MODEL SELECTION #####
 
 
 
