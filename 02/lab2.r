@@ -29,22 +29,7 @@ mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
 degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 
-# Variables to be used in distribution functions
-get_MP <- function(x) { return(sum(log(x)))}
-get_C <- function(x) { C = 0
-for(i in x){
-    j = 2
-    while( j <= i){
-        C <- C + log(j)
-        j = j+1
-    }
-} 
-return(C)
-}
-
-
-
-# Create table of degree statistics
+###########  Basic degree statistics ########### 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
      
 write_summary <- function(language,file) {
@@ -86,14 +71,11 @@ barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of ve
 
 
 ########### Minus Log-likelihood Functions ########### 
-
-# Basic metrics
 x <- degree_sequence$V1
 M <- sum(x)
 N <- length(x)
 
 get_H <- function(k, gamma) {
-  # TODO: Check H
   return(sum(seq(1, k)^(-gamma)))
 }
 
@@ -101,6 +83,18 @@ get_AIC <- function(m2logL,K,N) {
   m2logL + 2*K*N/(N-K-1) # AIC with a correction for sample size
 }
 
+get_MP <- function(x) { return(sum(log(x)))}
+
+get_C <- function(x) { C = 0
+  for(i in x){
+    j = 2
+    while( j <= i){
+      C <- C + log(j)
+      j = j+1
+    }
+  } 
+  return(C)
+}
 
 ###########  Estimating log-likelihood parameters ########### 
 compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
@@ -112,7 +106,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     
     # Displaced Geometric function
     minus_log_likelihood_geometric <- function(q){
-      -(M - N * log(1 - q)) - (N * log(q))
+      -(M - N) * log(1 - q) - N * log(q)
     }
     
     # Minus log-likelihood function (minus_log_likelihood = -L)
@@ -155,7 +149,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
                     start = list(gamma = 2), #Alternatively, k = N
                     method = "L-BFGS-B",
-                    lower = c(1.001, length(x)))
+                    lower = c(1.001,length(x)))
 
     vec <- c(
         attributes(summary(mle_poisson))$coef[1],
@@ -174,8 +168,8 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 }
 
 
-### MODEL SELECTION #####
 
+########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
     coeff_table <- data.table(#"language" = character(),
                           "lambda" = numeric(),
@@ -220,9 +214,6 @@ aic_table <- aic_c_table[2]
 
 coeffs_table
 aic_table
-
-
-
 
 best_AIC <- min(vec_aics)
 vec_delta <- vec_aics - best_AIC
