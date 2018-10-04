@@ -206,6 +206,10 @@ compute_coeffs_table <- function(summary_table) {
         coeff_table <- rbind(coeff_table, g)
         aic_table <- rbind(aic_table, h)
     }
+    
+    for (i in seq(length(aic_table$'1'))) {
+        aic_table[i] <- aic_table[i] - min(aic_table[i])
+    }
     return(list(coeff_table, aic_table))
 }
 
