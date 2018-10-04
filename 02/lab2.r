@@ -157,23 +157,20 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     method = "L-BFGS-B",
                     lower = c(1.001, length(x)))
 
-    vec_coeffs <- c(
+    vec <- c(
         attributes(summary(mle_poisson))$coef[1],
         attributes(summary(mle_geometric))$coef[1],
         attributes(summary(mle_zeta))$coef[1],
         2,
-        attributes(summary(mle_zeta3))$coef[1]
-    )
-    
-    vec_aics <- c(
-      get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
-      get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N),
-      get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N),
-      get_AIC(attributes(summary(mle_zeta2))$m2logL, 1, N),
-      get_AIC(attributes(summary(mle_zeta3))$m2logL, 1, N)
+        attributes(summary(mle_zeta3))$coef[1],
+        get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
+        get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N),
+        get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N),
+        get_AIC(attributes(summary(mle_zeta2))$m2logL, 1, N),
+        get_AIC(attributes(summary(mle_zeta3))$m2logL, 1, N)
     )
 
-    return(list(vec_coeffs, vec_aics))
+    return(vec)
 }
 
 
@@ -189,12 +186,12 @@ compute_coeffs_table <- function(summary_table) {
                           stringsAsFactors = FALSE)
     
     aic_table <- data.table(#"language" = character(),
-      "1" = numeric(),
-      "2" = numeric(),
-      "3" = numeric(),
-      "4" = numeric(),
-      "5" = numeric(),
-      stringsAsFactors = FALSE)
+                          "1" = numeric(),
+                          "2" = numeric(),
+                          "3" = numeric(),
+                          "4" = numeric(),
+                          "5" = numeric(),
+                          stringsAsFactors = FALSE)
     
     for (i in seq(length(summary_table$language))) {
         language <- summary_table[i]$language 
@@ -204,14 +201,16 @@ compute_coeffs_table <- function(summary_table) {
         C <- summary_table[i]$C
         maxDegree <- summary_table[i]$`Maximum Degree`
         resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C)
-        coeff_table <- rbind(coeff_table, resultList[1])
-        aic_table <- rbind(aic_table, resultList[2])
+        g <- as.list(resultList[1:5])
+        h <- as.list(resultList[6:10])
+        coeff_table <- rbind(coeff_table, g)
+        aic_table <- rbind(aic_table, h)
     }
-    print(coeff_table[1])
     return(list(coeff_table, aic_table))
 }
 
 aic_c_table <- compute_coeffs_table(summary_table)
+aic_c_table
 coeffs_table <- aic_c_table[1]
 aic_table <- aic_c_table[2]
 
