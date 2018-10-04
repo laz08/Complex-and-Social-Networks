@@ -29,12 +29,27 @@ mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
 degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 
+# Variables to be used in distribution functions
+get_MP <- function(x) { return(sum(log(x)))}
+get_C <- function(x) { C = 0
+for(i in x){
+    j = 2
+    while( j <= i){
+        C <- C + log(j)
+        j = j+1
+    }
+} 
+return(C)
+}
+
+
+
 # Create table of degree statistics
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
      
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
-  l <- list(language,length(degree_sequence$V1),sum(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1))
+  l <- list(language,length(degree_sequence$V1),sum(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1), get_MP(degree_sequence$V1), get_C(degree_sequence$V1))
   return(l)
 }
 
@@ -46,6 +61,8 @@ create_sum_table <- function(){
                         "Maximum Degree" = numeric(),
                         "M/N" = numeric(),
                         "N/M" = numeric(),
+                        "MP" = numeric(),
+                        "C" = numeric(),
                         stringsAsFactors = FALSE)
   
   for (x in 1:nrow(source)){
@@ -66,19 +83,6 @@ barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of ve
 barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
 barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
 
-# Variables to be used in distribution functions
-get_MP <- function(x) { return(sum(log(x)))}
-get_C <- function(x) { C = 0
-                       for(i in x){
-                           j = 2
-                           while( j <= i){
-                             C <- C + log(j)
-                             j = j+1
-                           }
-                         } 
-                        return(C)
-                      }
-
 
 get_H <- function(k, gamma) {
     # TODO: Check H
@@ -95,43 +99,43 @@ N <- length(x)
     
     
 # Displaced Poisson function
-minus_log_likelihood_poisson <- function(lambda){
-  -(M * log(lambda) - N*(lambda + log(1 - exp(-lambda))) - get_C(x)) 
+minus_log_likelihood_poisson <- function(lambda, M, N, C){
+  -(M * log(lambda) - N*(lambda + log(1 - exp(-lambda))) - C) 
 }
 
 # Displaced Geometric function
-minus_log_likelihood_geometric <- function(q){
+minus_log_likelihood_geometric <- function(q, M, N){
   -(M - N * log(1 - q)) - (N * log(q))
 }
 
 # Minus log-likelihood function (minus_log_likelihood = -L)
-minus_log_likelihood_zeta <- function(gamma){ 
-    gamma * get_MP(x) + N * log(zeta(gamma))
+minus_log_likelihood_zeta <- function(gamma, N, MP){ 
+    gamma * MP + N * log(zeta(gamma))
 }
 
 # Minus log-likelihood zeta function with lambda - 2
-minus_log_likelihood_zeta2 <- function(gamma){
-  2 * get_MP(x) + N * log(pi^2/6)
+minus_log_likelihood_zeta2 <- function(N, MP){
+  2 * MP + N * log(pi^2/6)
 }
 
 # Minus log-likelihood right-truncated zeta
-minus_log_likelihood_zeta3 <- function(gamma, k){
-  gamma * get_MP(x) + N * log(get_H(k, gamma))
+minus_log_likelihood_zeta3 <- function(gamma, k, N, MP){
+  gamma * MP + N * log(get_H(k, gamma))
 }
 
 
 
 ###########  Estimating log-likelihood parameters ########### 
-compute_log_likelihoods <- function(){
+compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     
     mle_poisson <- mle(minus_log_likelihood_poisson, 
-                    start = list(lambda = M/N),
+                    start = list(lambda = M/N, M = M, N = N, C = C),
                     method = "L-BFGS-B",
                     lower = c(1.00000001))
     attributes(summary(mle_poisson))$coef[1]
     
     mle_geometric <- mle(minus_log_likelihood_geometric, 
-                    start = list(q = N/M),
+                    start = list(q = N/M, M = M, N = N),
                     method = "L-BFGS-B",
                     lower = c(0.00001), # TODO - is this correct? 
                     upper = c(0.99)) # TODO - is this correct? 
@@ -141,7 +145,7 @@ compute_log_likelihoods <- function(){
     attributes(summary(mle_geometric))$coef[1]
     
     mle_zeta <- mle(minus_log_likelihood_zeta, 
-                    start = list(gamma = 2),
+                    start = list(gamma = 2, N = N, MP = MP),
                     method = "L-BFGS-B",
                     lower = c(1.00000001))
     
@@ -149,20 +153,14 @@ compute_log_likelihoods <- function(){
     
     
     # TODO: Check what to do with zeta 2
-    #mle_zeta2 <- mle(minus_log_likelihood_zeta2,
-    mle_zeta2 <- mle(minus_log_likelihood_zeta,
-                    start = list(gamma = 2),
-                    method = "L-BFGS-B",
-                    lower = c(1.00000001))
-    
-    attributes(summary(mle_zeta2))$coef[1]
-    
+    mle_zeta2 <- minus_log_likelihood_zeta2(N, MP)
+   
     
     # TODO: Check warning below. Doesn't look good.
     mle_zeta3 <- mle(minus_log_likelihood_zeta3, 
-                    start = list(gamma = 2, k = N),
+                    start = list(gamma = 2, k = maxDegree, N = N, MP = MP), #Alternatively, k = N
                     method = "L-BFGS-B",
-                    lower = c(1.00000001, length(x)))
+                    lower = c(1.001, length(x)))
     
     attributes(summary(mle_zeta3))$coef[1]
     
@@ -170,7 +168,7 @@ compute_log_likelihoods <- function(){
         attributes(summary(mle_poisson))$coef[1],
         attributes(summary(mle_geometric))$coef[1],
         attributes(summary(mle_zeta))$coef[1],
-        attributes(summary(mle_zeta2))$coef[1],
+        mle_zeta2,
         attributes(summary(mle_zeta3))$coef[1]
     )
     return(vec_coeffs)
@@ -178,6 +176,36 @@ compute_log_likelihoods <- function(){
 
 
 ### MODEL SELECTION #####
+
+
+
+compute_coeffs_table <- function(summary_table) {
+    coeff_table <- data.table(#"language" = character(),
+                          "lambda" = numeric(),
+                          "q" = numeric(),
+                          "gamma_1" = numeric(),
+                          "gamma_2" = numeric(),
+                          "k_max" = numeric(),
+                          stringsAsFactors = FALSE)
+    
+    for (i in seq(length(summary_table$language))) {
+        language <- summary_table[i]$language 
+        M <- summary_table[i]$M
+        N <- summary_table[i]$N
+        MP <- summary_table[i]$MP
+        C <- summary_table[i]$C
+        maxDegree <- summary_table[i]$`Maximum Degree`
+        coeffs <- compute_log_likelihoods(M, N, maxDegree, MP, C)
+        
+        coeff_table <- rbind(coeff_table, coeffs)
+    }
+    return(coeff_table)
+}
+coeffs_table <- compute_coeffs_table(summary_table)
+coeffs_table
+
+
+
 
 attributes(summary(mle_zeta))$m2logL
 get_AIC <- function(m2logL,K,N) {
@@ -195,26 +223,3 @@ vec_aics <- c(
 
 best_AIC <- min(vec_aics)
 vec_delta <- vec_aics - best_AIC
-
-
-compute_coeffs_table <- function(summary_table) {
-    coeff_table <- data.table(#"language" = character(),
-                          "lambda" = numeric(),
-                          "q" = numeric(),
-                          "gamma_1" = numeric(),
-                          "gamma_2" = numeric(),
-                          "k_max" = numeric(),
-                          stringsAsFactors = FALSE)
-    
-    for (i in seq(length(summary_table$language))) {
-        language <- summary_table[i]$language
-        M <- summary_table[i]$M
-        N <- summary_table[i]$N
-        coeffs <- compute_log_likelihoods()
-        
-        coeff_table <- rbind(coeff_table, coeffs)
-    }
-    return(coeff_table)
-}
-coeffs_table <- compute_coeffs_table(summary_table)
-coeffs_table
