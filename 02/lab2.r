@@ -31,7 +31,7 @@ degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 ###########  Basic degree statistics ########### 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
-     
+
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
   l <- list(language,length(degree_sequence$V1),sum(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1), get_MP(degree_sequence$V1), get_C(degree_sequence$V1))
@@ -96,6 +96,15 @@ get_C <- function(x) { C = 0
   return(C)
 }
 
+get_c <- function(x, lambda, delta){ 
+  c = 0
+  for (k in 1:lenth(x)){
+    c = c + ( k^(-lambda) * exp(-delta * k) )
+  }
+  return(1/c)
+  
+}
+
 ###########  Estimating log-likelihood parameters ########### 
 compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 
@@ -122,6 +131,11 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     # Minus log-likelihood right-truncated zeta
     minus_log_likelihood_zeta3 <- function(gamma){
       gamma * MP + N * log(get_H(maxDegree, gamma))
+    }
+    
+    # Altmann function
+    minus_log_likelihood_altmann <- function(lambda, delta){
+      c * maxDegree^(-lambda) * e^(-delta * maxDegree)
     }
   
     mle_poisson <- mle(minus_log_likelihood_poisson,
@@ -151,6 +165,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     method = "L-BFGS-B",
                     lower = c(1.001,length(x)))
 
+    
     vec <- c(
         attributes(summary(mle_poisson))$coef[1],
         attributes(summary(mle_geometric))$coef[1],
@@ -217,3 +232,14 @@ aic_table
 
 best_AIC <- min(vec_aics)
 vec_delta <- vec_aics - best_AIC
+
+
+
+########### Testing models on contrived data ########### 
+
+geomteric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
+                             header = FALSE)
+
+
+
+
