@@ -30,7 +30,8 @@ degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
 
 
 ###########  Basic degree statistics ########### 
-source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
+#source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
+source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
 
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
