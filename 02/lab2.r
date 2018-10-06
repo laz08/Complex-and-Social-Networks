@@ -148,14 +148,14 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     minus_log_likelihood_altmann <- function(lambda, delta){
       c * maxDegree^(-lambda) * e^(-delta * maxDegree)
     }
-  
+    
     mle_poisson <- mle(minus_log_likelihood_poisson,
                     start = list(lambda = M/N),
                     method = "L-BFGS-B",
-                    lower = c(1.0001))
+                    lower = c(1.000001))
 
     mle_geometric <- mle(minus_log_likelihood_geometric,
-                    start = list(q = N/M), # ASK: q remains the same at .99
+                    start = list(q = N/M), 
                     method = "L-BFGS-B",
                     lower = c(0.01), 
                     upper = c(.99)) # No higher than .99 (ex: .999)
@@ -171,6 +171,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     lower = c(1.00000001))
 
     # TODO: Check warning below. Doesn't look good.
+    # Update 6/10: Check there is still warnings. Was using length(x) instead of N (wrong)
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
                     start = list(gamma = 2), #Alternatively, k = N
                     method = "L-BFGS-B",
@@ -213,8 +214,8 @@ compute_coeffs_table <- function(summary_table) {
                           "5" = numeric(),
                           stringsAsFactors = FALSE)
     
-    for (i in seq(length(summary_table$language))) {
-        language <- summary_table[i]$language 
+    for (i in seq(length(summary_table$Language))) {
+        language <- summary_table[i]$Language 
         M <- summary_table[i]$M
         N <- summary_table[i]$N
         MP <- summary_table[i]$MP
