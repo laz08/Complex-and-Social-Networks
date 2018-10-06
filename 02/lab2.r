@@ -17,64 +17,41 @@ if(grepl("nora", wd)) {
 }
 rm(wd)
 
+#####################################################################
+### FLAGS
 
-degree_sequence = read.table("./data/English_out-degree_sequence.txt",
-                             header = FALSE)
-num_nodes <- nrow(degree_sequence)
-sum_degree <- sum(degree_sequence)
-mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
+PLOT_GRAPHICS = FALSE
+USE_OUT_DEGREE_SEQ = FALSE
 
+#####################################################################
 
-# Remove nodes of out-degree 0 (k=0)
-degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
-
-
-###########  Basic degree statistics ########### 
-#source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
-source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
-
-write_summary <- function(language,file) {
-  degree_sequence = read.table(file, header = FALSE)
-  l <- list(language,length(degree_sequence$V1),sum(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1), get_MP(degree_sequence$V1), get_C(degree_sequence$V1))
-  return(l)
+if(USE_OUT_DEGREE_SEQ){
+    degree_sequence = read.table("./data/English_out-degree_sequence.txt",
+                                 header = FALSE)
+    num_nodes <- nrow(degree_sequence)
+    sum_degree <- sum(degree_sequence)
+    mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
+    
+    
+    # Remove nodes of out-degree 0 (k=0)
+    degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
+    
+    
+    # Barplots of data
+    degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
+    degree_spectrum = table(degree_sequence)
+    x <- degree_sequence$V1
+    M <- sum(x)
+    N <- length(x)
+    
+    if(PLOT_GRAPHICS){
+        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices")
+        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
+        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
+    }
 }
 
-create_sum_table <- function(){
-  
-  temp_df <- data.table("language" = character(),
-                        "N" = numeric(),
-                        "M" = numeric(),
-                        "Maximum Degree" = numeric(),
-                        "M/N" = numeric(),
-                        "N/M" = numeric(),
-                        "MP" = numeric(),
-                        "C" = numeric(),
-                        stringsAsFactors = FALSE)
-  
-  for (x in 1:nrow(source)){
-    file <- source$file[x]
-    language <- source$language[x]
-    sequence <- write_summary(language, file)
-    temp_df <- rbind(temp_df,sequence)
-  }
-  return(temp_df)
-}               
-                    
-(summary_table <- create_sum_table())
-
-# Barplots of data
-degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
-degree_spectrum = table(degree_sequence)
-barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices")
-barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
-barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
-
-
-
 ########### Minus Log-likelihood Functions ########### 
-x <- degree_sequence$V1
-M <- sum(x)
-N <- length(x)
 
 get_H <- function(k, gamma) {
   return(sum(seq(1, k)^(-gamma)))
@@ -99,12 +76,45 @@ get_C <- function(x) { C = 0
 
 get_c <- function(x, lambda, delta){ 
   c = 0
-  for (k in 1:lenth(x)){
+  for (k in 1:length(x)){
     c = c + ( k^(-lambda) * exp(-delta * k) )
   }
   return(1/c)
   
 }
+
+
+############# Creating summary table
+
+
+write_summary <- function(language,file) {
+    degree_sequence = read.table(file, header = FALSE)
+    l <- list(language,length(degree_sequence$V1),sum(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1), get_MP(degree_sequence$V1), get_C(degree_sequence$V1))
+    return(l)
+}
+
+
+create_sum_table <- function(source){
+    
+    temp_df <- data.table("Language" = character(),
+                          "N" = numeric(),
+                          "M" = numeric(),
+                          "Maximum Degree" = numeric(),
+                          "M/N" = numeric(),
+                          "N/M" = numeric(),
+                          "MP" = numeric(),
+                          "C" = numeric(),
+                          stringsAsFactors = FALSE)
+    
+    for (x in 1:nrow(source)){
+        file <- source$file[x]
+        language <- source$language[x]
+        sequence <- write_summary(language, file)
+        temp_df <- rbind(temp_df,sequence)
+    }
+    return(temp_df)
+}               
+
 
 ###########  Estimating log-likelihood parameters ########### 
 compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
@@ -142,7 +152,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     mle_poisson <- mle(minus_log_likelihood_poisson,
                     start = list(lambda = M/N),
                     method = "L-BFGS-B",
-                    lower = c(1.00000001))
+                    lower = c(1.0001))
 
     mle_geometric <- mle(minus_log_likelihood_geometric,
                     start = list(q = N/M), # ASK: q remains the same at .99
@@ -164,7 +174,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
                     start = list(gamma = 2), #Alternatively, k = N
                     method = "L-BFGS-B",
-                    lower = c(1.001,length(x)))
+                    lower = c(1.001, N))
 
     
     vec <- c(
@@ -217,12 +227,16 @@ compute_coeffs_table <- function(summary_table) {
         aic_table <- rbind(aic_table, h)
     }
     
+    # Computing delta: AIC - best AIC 
     for (i in seq(length(aic_table$'1'))) {
         aic_table[i] <- aic_table[i] - min(aic_table[i])
     }
     return(list(coeff_table, aic_table))
 }
 
+
+out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
+(summary_table <- create_sum_table(out_source))
 aic_c_table <- compute_coeffs_table(summary_table)
 aic_c_table
 coeffs_table <- aic_c_table[1]
@@ -231,16 +245,17 @@ aic_table <- aic_c_table[2]
 coeffs_table
 aic_table
 
-best_AIC <- min(vec_aics)
-vec_delta <- vec_aics - best_AIC
-
 
 
 ########### Testing models on contrived data ########### 
 
-geomteric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
+geometric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
                              header = FALSE)
 
 
+geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
 
-
+(test_table <- create_sum_table(geom_source))
+aic_c_table_test <- compute_coeffs_table(test_table)
+coeffs_table_test <- aic_c_table_test[1]
+aic_table_test <- aic_c_table_test[2]
