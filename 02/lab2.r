@@ -239,8 +239,9 @@ out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","fil
 (summary_table <- create_sum_table(out_source))
 aic_c_table <- compute_coeffs_table(summary_table)
 aic_c_table
-coeffs_table <- aic_c_table[1]
-aic_table <- aic_c_table[2]
+
+coeffs_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[1]))
+aic_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[2]))
 
 coeffs_table
 aic_table

@@ -239,14 +239,27 @@ Having computed the basic metrics, we now proceed onto compute the most likely p
 
 ```{r comp_tables, include=FALSE, echo=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
-coeffs_table <- aic_c_table[1]
-aic_table <- aic_c_table[2]
+
+coeffs_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[1]))
+aic_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[2]))
+
 ```
 
 ```{r echo=FALSE}
-# kable(coeffs_table)
-# TODO: Take coeffs table as a table or dataframe to column bind the languages
+kable(coeffs_table)
 ```
+
+Having obtained these parameters, we can now proceed to obtain the -2 log Likelihood 
+for each method and compute the AIC. 
+
+Once computed, we can produce the delta table by substracting the best AIC of each Language
+from the other methods' AIC. The resulting table is the following:
+```{r echo=FALSE}
+kable(aic_table)
+```
+
+We can see that, in the case of the out-degree  sequence, the method what works best is
+the right-truncated zeta one.
 
 
 # Discussion
