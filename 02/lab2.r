@@ -260,3 +260,18 @@ geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("langu
 aic_c_table_test <- compute_coeffs_table(test_table)
 coeffs_table_test <- aic_c_table_test[1]
 aic_table_test <- aic_c_table_test[2]
+coeffs_table_test
+aic_table_test
+
+# OK for geom. distrib.
+
+zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
+
+(test_table <- create_sum_table(zeta_source))
+aic_c_table_test <- compute_coeffs_table(test_table)
+coeffs_table_test <- aic_c_table_test[1]
+aic_table_test <- aic_c_table_test[2]
+coeffs_table_test
+aic_table_test
+
+# OK for right-truncated zeta.
