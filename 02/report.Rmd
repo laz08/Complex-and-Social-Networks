@@ -1,4 +1,13 @@
-requiredPackages <- c("igraph", "ggplot2", "data.table", "expss", "stats4", "VGAM")
+---
+title: "CSN - Second Lab"
+author: "Kymry Burwell, Laura Cebollero"
+geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
+date: "October 7th, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+requiredPackages <- c("igraph", "ggplot2", "data.table", "expss", "stats4", "VGAM", "knitr")
 for (pac in requiredPackages) {
   if(!require(pac,  character.only=TRUE)){
     install.packages(pac, repos="http://cran.rstudio.com")
@@ -16,42 +25,8 @@ if(grepl("nora", wd)) {
   setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/Lab2")
 }
 rm(wd)
-
-#####################################################################
-### FLAGS
-
-PLOT_GRAPHICS = FALSE
-USE_OUT_DEGREE_SEQ = FALSE
-
-#####################################################################
-
-if(USE_OUT_DEGREE_SEQ){
-    degree_sequence = read.table("./data/English_out-degree_sequence.txt",
-                                 header = FALSE)
-    num_nodes <- nrow(degree_sequence)
-    sum_degree <- sum(degree_sequence)
-    mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
-    
-    
-    # Remove nodes of out-degree 0 (k=0)
-    degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
-    
-    
-    # Barplots of data
-    degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
-    degree_spectrum = table(degree_sequence)
-    x <- degree_sequence$V1
-    M <- sum(x)
-    N <- length(x)
-    
-    if(PLOT_GRAPHICS){
-        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices")
-        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
-        barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
-    }
-}
-
-########### Minus Log-likelihood Functions ########### 
+```
+```{r metric_functions, include=FALSE}
 
 get_H <- function(k, gamma) {
   return(sum(seq(1, k)^(-gamma)))
@@ -73,15 +48,9 @@ get_C <- function(x) { C = 0
   } 
   return(C)
 }
+```
 
-get_c <- function(x, lambda, delta){ 
-  c = 0
-  for (k in 1:length(x)){
-    c = c + ( k^(-lambda) * exp(-delta * k) )
-  }
-  return(1/c)
-  
-}
+```{r comp_functions, include=FALSE}
 
 
 ############# Creating summary table
@@ -234,43 +203,52 @@ compute_coeffs_table <- function(summary_table) {
     return(list(coeff_table, aic_table))
 }
 
+```
+
+# Introduction
+The aim of this lab project is to analyze a degree distribution and select a theoretic model that best fits it. There are three sequences of which we can work on:
+
+1. Undirected degree sequence.
+2. In-degree sequence.
+3. Out-degree sequence.
+
+In our case, we have chosen to work with the out-degree one  for 10 different languages.
+
+The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N) and the maximum degree, among others.
+
+Additionally, to make our computations easier we have added a couple of metrics that we were not required in Table 1, which are M' and C.
+
+```{r include=FALSE, echo=FALSE}
 
 out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
 (summary_table <- create_sum_table(out_source))
+
+```
+
+
+The resulting table is the following:
+
+```{r echo=FALSE}
+kable(summary_table)
+```
+
+
+# Results
+Having computed the basic metrics, we now proceed onto compute the most likely parameters for the different given distributions.
+
+
+```{r comp_tables, include=FALSE, echo=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
-aic_c_table
 coeffs_table <- aic_c_table[1]
 aic_table <- aic_c_table[2]
+```
 
-coeffs_table
-aic_table
-
-
-
-########### Testing models on contrived data ########### 
-
-geometric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
-                             header = FALSE)
+```{r echo=FALSE}
+# kable(coeffs_table)
+# TODO: Take coeffs table as a table or dataframe to column bind the languages
+```
 
 
-geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
+# Discussion
 
-(test_table <- create_sum_table(geom_source))
-aic_c_table_test <- compute_coeffs_table(test_table)
-coeffs_table_test <- aic_c_table_test[1]
-aic_table_test <- aic_c_table_test[2]
-coeffs_table_test
-aic_table_test
-
-# OK for geom. distrib.
-
-zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
-
-(test_table <- create_sum_table(zeta_source))
-aic_c_table_test <- compute_coeffs_table(test_table)
-coeffs_table_test <- aic_c_table_test[1]
-aic_table_test <- aic_c_table_test[2]
-coeffs_table_test
-aic_table_test
-
-# OK for right-truncated zeta.
+# Methods
