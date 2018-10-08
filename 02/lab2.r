@@ -13,14 +13,14 @@ wd = getwd()
 if(grepl("nora", wd)) {
     setwd("~/git/csn-labs/02")
 } else {
-  setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/Lab2")
+  setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
 }
 rm(wd)
 
 #####################################################################
 ### FLAGS
 
-PLOT_GRAPHICS = FALSE
+PLOT_GRAPHICS = TRUE
 USE_OUT_DEGREE_SEQ = FALSE
 
 #####################################################################
@@ -49,6 +49,7 @@ if(USE_OUT_DEGREE_SEQ){
         barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
         barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
     }
+    
 }
 
 ########### Minus Log-likelihood Functions ########### 
@@ -198,10 +199,10 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 ########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
     coeff_table <- data.table(#"language" = character(),
-                          "lambda" = numeric(),
+                          "gamma" = numeric(),
                           "q" = numeric(),
-                          "gamma_1" = numeric(),
-                          "gamma_2" = numeric(),
+                          "\u03B3 1" = numeric(),
+                          "\u03B3 2" = numeric(),
                           "k_max" = numeric(),
                           stringsAsFactors = FALSE)
     
