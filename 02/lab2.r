@@ -288,3 +288,9 @@ coeffs_table_test
 aic_table_test
 
 # OK for right-truncated zeta.
+
+
+for (file in out_source$file) {
+    geom_plot(degree_sequence, .1)
+    zeta_plot(degree_sequence, 1.52)
+}

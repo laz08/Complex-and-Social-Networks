@@ -25,7 +25,13 @@ if(grepl("nora", wd)) {
   setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
 }
 rm(wd)
+
+
+source("plots.R")
 ```
+
+
+
 ```{r metric_functions, include=FALSE}
 
 get_H <- function(k, gamma) {
@@ -364,5 +370,13 @@ the right-truncated zeta one.
 
 
 # Discussion
+
+```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+geom_plot(outsource[1,2], .1)
+zeta_plot(degree_sequence, 1.52)
+
+## TODO Plot for Basque, Chinese and English SEPARATELY
+
+```
 
 # Methods
