@@ -21,7 +21,7 @@ rm(wd)
 ### FLAGS
 
 PLOT_GRAPHICS = TRUE
-USE_OUT_DEGREE_SEQ = FALSE
+USE_OUT_DEGREE_SEQ = TRUE
 
 #####################################################################
 
@@ -170,8 +170,6 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     method = "L-BFGS-B",
                     lower = c(1.00000001))
 
-    # TODO: Check warning below. Doesn't look good.
-    # Update 6/10: Check there is still warnings. Was using length(x) instead of N (wrong)
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
                     start = list(gamma = 2), #Alternatively, k = N
                     method = "L-BFGS-B",
@@ -198,20 +196,20 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 
 ########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
-    coeff_table <- data.table(#"language" = character(),
-                          "gamma" = numeric(),
+    coeff_table <- data.table("Language" = character(),
+                          "\u03BB" = numeric(),
                           "q" = numeric(),
                           "\u03B3 1" = numeric(),
                           "\u03B3 2" = numeric(),
                           "k_max" = numeric(),
                           stringsAsFactors = FALSE)
     
-    aic_table <- data.table(#"language" = character(),
-                          "1" = numeric(),
-                          "2" = numeric(),
-                          "3" = numeric(),
-                          "4" = numeric(),
-                          "5" = numeric(),
+    aic_table <- data.table("Language" = character(),
+                          "Poisson" = numeric(),
+                          "Geometric" = numeric(),
+                          "Zeta gamma 2" = numeric(),
+                          "Zeta" = numeric(),
+                          "RT Zeta" = numeric(),
                           stringsAsFactors = FALSE)
     
     for (i in seq(length(summary_table$Language))) {
@@ -224,13 +222,13 @@ compute_coeffs_table <- function(summary_table) {
         resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C)
         g <- as.list(resultList[1:5])
         h <- as.list(resultList[6:10])
-        coeff_table <- rbind(coeff_table, g)
-        aic_table <- rbind(aic_table, h)
+        coeff_table <- rbind(coeff_table, c(language, g))
+        aic_table <- rbind(aic_table, c(language, h))
     }
     
     # Computing delta: AIC - best AIC 
-    for (i in seq(length(aic_table$'1'))) {
-        aic_table[i] <- aic_table[i] - min(aic_table[i])
+    for (i in seq(length(aic_table$'Poisson'))) {
+        aic_table[i, 2:6] <- aic_table[i, 2:6] - min(aic_table[i, 2:6])
     }
     return(list(coeff_table, aic_table))
 }
@@ -241,8 +239,8 @@ out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","fil
 aic_c_table <- compute_coeffs_table(summary_table)
 aic_c_table
 
-coeffs_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[1]))
-aic_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[2]))
+coeffs_table <- as.data.table(aic_c_table[1])
+aic_table <-  as.data.table(aic_c_table[2])
 
 coeffs_table
 aic_table
@@ -259,8 +257,14 @@ geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("langu
 
 (test_table <- create_sum_table(geom_source))
 aic_c_table_test <- compute_coeffs_table(test_table)
-coeffs_table_test <- aic_c_table_test[1]
-aic_table_test <- aic_c_table_test[2]
+
+coeffs_table_test <- as.data.table(aic_c_table_test[1])
+aic_table_test <- as.data.table(aic_c_table_test[2])
+
+names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+
+
 coeffs_table_test
 aic_table_test
 
@@ -270,8 +274,16 @@ zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language",
 
 (test_table <- create_sum_table(zeta_source))
 aic_c_table_test <- compute_coeffs_table(test_table)
-coeffs_table_test <- aic_c_table_test[1]
-aic_table_test <- aic_c_table_test[2]
+
+
+coeffs_table_test <- as.data.table(aic_c_table_test[1])
+aic_table_test <- as.data.table(aic_c_table_test[2])
+
+
+names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+
+
 coeffs_table_test
 aic_table_test
 

@@ -166,20 +166,20 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 
 ########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
-    coeff_table <- data.table(#"language" = character(),
+    coeff_table <- data.table("Language" = character(),
                           "lambda" = numeric(),
                           "q" = numeric(),
-                          "gamma_1" = numeric(),
-                          "gamma_2" = numeric(),
+                          "gamma 1" = numeric(),
+                          "gamma 2" = numeric(),
                           "k_max" = numeric(),
                           stringsAsFactors = FALSE)
     
-    aic_table <- data.table(#"language" = character(),
-                          "1" = numeric(),
-                          "2" = numeric(),
-                          "3" = numeric(),
-                          "4" = numeric(),
-                          "5" = numeric(),
+    aic_table <- data.table("Language" = character(),
+                          "Poisson" = numeric(),
+                          "Geometric" = numeric(),
+                          "Zeta gamma = 2" = numeric(),
+                          "Zeta" = numeric(),
+                          "RT Zeta" = numeric(),
                           stringsAsFactors = FALSE)
     
     for (i in seq(length(summary_table$Language))) {
@@ -192,19 +192,35 @@ compute_coeffs_table <- function(summary_table) {
         resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C)
         g <- as.list(resultList[1:5])
         h <- as.list(resultList[6:10])
-        coeff_table <- rbind(coeff_table, g)
-        aic_table <- rbind(aic_table, h)
+        coeff_table <- rbind(coeff_table, c(language, g))
+        aic_table <- rbind(aic_table, c(language, h))
     }
     
     # Computing delta: AIC - best AIC 
-    for (i in seq(length(aic_table$'1'))) {
-        aic_table[i] <- aic_table[i] - min(aic_table[i])
+    for (i in seq(length(aic_table$'Poisson'))) {
+        aic_table[i, 2:6] <- aic_table[i, 2:6] - min(aic_table[i, 2:6])
     }
     return(list(coeff_table, aic_table))
 }
 
 ```
-
+```{r english_sequence, echo=FALSE}
+    degree_sequence = read.table("./data/English_out-degree_sequence.txt",
+                                 header = FALSE)
+    num_nodes <- nrow(degree_sequence)
+    sum_degree <- sum(degree_sequence)
+    mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
+    
+    # Remove nodes of out-degree 0 (k=0)
+    degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
+    
+    # Barplots of data
+    degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
+    degree_spectrum = table(degree_sequence)
+    x <- degree_sequence$V1
+    M <- sum(x)
+    N <- length(x)
+```
 # Introduction
 The aim of this lab project is to analyze a degree distribution and select a theoretic model that best fits it. There are three sequences of which we can work on:
 
@@ -215,6 +231,7 @@ The aim of this lab project is to analyze a degree distribution and select a the
 In our case, we have chosen to work with the out-degree one  for 10 different languages.
 
 The distributions we will be testing are the following:
+
 - Poisson distribution ($\lambda$ parameter)
 - Geometric distribution ($q$ parameter)
 - Zeta distribution ($\gamma$ parameter)
@@ -243,16 +260,16 @@ In the table above, N represents the number of nodes in the network, M is the su
 
 Next, we will look at a few bar plots for the English langauge to get a visual idea of the degree distribution. 
 
-```{r comp_tables, include=FALSE, echo=FALSE}
+```{r barplot, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices")
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices", log = "xy")
- barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices", log = "y")
 ```
 
 We can see from the above plots that nodes with small out-degree are more common than nodes with high out-degree.
 
 # Results
 Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. Theses consist of the following:
+
 - $\lambda_{0}$ = M/N
 - $q_{0}$ = N/M
 - $\gamma_{0}$ = 2
@@ -262,8 +279,8 @@ Having computed the basic metrics, we now proceed to compute the most likely par
 ```{r comp_tables, include=FALSE, echo=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
 
-coeffs_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[1]))
-aic_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[2]))
+coeffs_table <- as.data.table(aic_c_table[1])
+aic_table <- as.data.table(aic_c_table[2])
 
 ```
 
@@ -271,13 +288,68 @@ aic_table <- cbind(Language = summary_table$Language, as.data.table(aic_c_table[
 kable(coeffs_table)
 ```
 
-In order to verify the methods we used to compute the minus log-likelihood parameters, we will test them on contrived data where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. The table below displays the AIC computed. 
+In order to verify the methods we used to compute the minus log-likelihood parameters, we will test them on contrived data where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. 
 
-# Insert table here
+## Geometric test
+
+For the different instances of the geometric test table, we have computed first the coefficients table:
+
+```{r echo=FALSE}
+
+geometric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
+                             header = FALSE)
 
 
+geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
+
+test_table <- create_sum_table(geom_source)
+aic_c_table_test <- compute_coeffs_table(test_table)
+
+coeffs_table_test <- as.data.table(aic_c_table_test[1])
+aic_table_test <- as.data.table(aic_c_table_test[2])
+
+names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
 
+kable(coeffs_table_test)
+```
+
+And the delta AIC one:
+
+```{r echo=FALSE}
+kable(aic_table_test)
+```
+
+## Zeta test
+
+Now we are going to apply the same tests with a prior known.
+
+For the case of the coefficients table we get the results below:
+```{r echo=FALSE}
+
+zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
+
+test_table <- create_sum_table(zeta_source)
+aic_c_table_test <- compute_coeffs_table(test_table)
+
+
+coeffs_table_test <- as.data.table(aic_c_table_test[1])
+aic_table_test <- as.data.table(aic_c_table_test[2])
+
+
+names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+
+kable(coeffs_table_test)
+```
+And for the delta AIC:
+```{r echo=FALSE}
+kable(aic_table_test)
+```
+
+
+## Test conclusions
 Having obtained these parameters, we can now proceed to obtain the -2 log Likelihood 
 for each method and compute the AIC. 
 
