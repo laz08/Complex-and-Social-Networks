@@ -453,7 +453,7 @@ zeta_plot(seq, coeff, lang)
 As we can see, the Right truncated  Zeta distribution does not fit as well as with the other
 2 languages, but still takes into account the tail on the far right.
 
-
+This is probably due to the dot on the far left, top corner, that changes the slope slightly.
 
 
 # Methods
