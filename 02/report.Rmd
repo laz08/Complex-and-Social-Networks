@@ -266,7 +266,7 @@ In the table above, N represents the number of nodes in the network, M is the su
 
 Next, we will look at a few bar plots for the English langauge to get a visual idea of the degree distribution. 
 
-```{r barplot, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+```{r barplot, echo=FALSE, out.width="230px", out.height="230px", fig.align="center"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices")
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices", log = "xy")
 ```
@@ -274,14 +274,15 @@ Next, we will look at a few bar plots for the English langauge to get a visual i
 We can see from the above plots that nodes with small out-degree are more common than nodes with high out-degree.
 
 # Results
-Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. Theses consist of the following:
+Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. These consist of the following:
 
 - $\lambda_{0}$ = M/N
 - $q_{0}$ = N/M
 - $\gamma_{0}$ = 2
 - $k_{max, 0}$ = N
 
-
+Using the out-degree sequences for each different language, we have obtained
+the following coeffcients for each one of them:
 ```{r comp_tables, include=FALSE, echo=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
 
@@ -294,7 +295,10 @@ aic_table <- as.data.table(aic_c_table[2])
 kable(coeffs_table)
 ```
 
-In order to verify the methods we used to compute the minus log-likelihood parameters, we will test them on contrived data where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. 
+Before proceeding onto computing the delta AIC and select the best model, we should first check that
+our methods have been correctly addressed and implented.
+
+In order to verify the methods we have used to compute the minus log-likelihood parameters, we will test them on contrived data where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. 
 
 ## Geometric test
 
@@ -327,9 +331,13 @@ And the delta AIC one:
 kable(aic_table_test)
 ```
 
+As we can see, in this delta AIC table we can see that the preferred and selected method is the 
+geometric one. So in this case, the test is passed.
+
+
 ## Zeta test
 
-Now we are going to apply the same tests with a prior known.
+Now we are going to apply the test methodology with theoretical zeta distributions.
 
 For the case of the coefficients table we get the results below:
 ```{r echo=FALSE}
@@ -349,11 +357,13 @@ names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta
 
 kable(coeffs_table_test)
 ```
+
 And for the delta AIC:
 ```{r echo=FALSE}
 kable(aic_table_test)
 ```
 
+In this case, we can see that it is always selecting the Right-truncated zeta.
 
 ## Test conclusions
 Having obtained these parameters, we can now proceed to obtain the -2 log Likelihood 
@@ -372,8 +382,8 @@ the right-truncated zeta one.
 # Discussion
 
 ```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
-geom_plot(outsource[1,2], .1)
-zeta_plot(degree_sequence, 1.52)
+#geom_plot(outsource[1,2], .1)
+#zeta_plot(degree_sequence, 1.52)
 
 ## TODO Plot for Basque, Chinese and English SEPARATELY
 
