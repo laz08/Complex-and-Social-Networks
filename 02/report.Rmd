@@ -234,9 +234,7 @@ The aim of this lab project is to analyze a degree distribution and select a the
 2. In-degree sequence.
 3. Out-degree sequence.
 
-In our case, we have chosen to work with the out-degree one  for 10 different languages.
-
-The distributions we will be testing are the following:
+In our case, we have chosen to work with the out-degree one for 10 different languages. The distributions we will be testing are the following:
 
 - Poisson distribution ($\lambda$ parameter)
 - Geometric distribution ($q$ parameter)
@@ -245,33 +243,33 @@ The distributions we will be testing are the following:
 - Right truncated distribution ($\gamma$ and $k_{max}$ parameteres)
 - Altmann distribution ($k_{max}$, $\delta$, and $\gamma$ parameters)
 
-The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N) and the maximum degree, among others.
+The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N), the maximum degree, among others. Additionally, to make our computations easier we have added a couple of metrics that we were not required, namely MP and C. The metrics of the English out-degree sequence can be seen in the following table.
 
-Additionally, to make our computations easier we have added a couple of metrics that we were not required in Table 1, which are MP and C.
 
 ```{r include=FALSE, echo=FALSE}
 
 out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
-(summary_table <- create_sum_table(out_source))
+summary_table <- create_sum_table(out_source)
 
 ```
 
-The resulting table is the following:
 
-```{r echo=FALSE}
-kable(summary_table)
+```{r sumtable, echo=FALSE}
+kable(summary_table, caption="\\label{tab:table1}Summary Table of English Out-degree Metrics")
 ```
 
-In the table above, N represents the number of nodes in the network, M is the sum of degrees of all nodes, Maximum Degree is the highest degree in the give language, M/N is the average degree, N/M is the inverse of the average degree, MP is the sum of the log of degrees, and C is the the following $\sum_{i=1}^{N} \sum_{j=2}^{k_i} log(j)$.
+In the table 1 above, N represents the number of nodes in the network, M is the sum of degrees of all nodes, Maximum Degree is the largest out-degree, M/N is the average degree, N/M is the inverse of the average degree, MP is the sum of the log of degrees, and C is the the following $\sum_{i=1}^{N} \sum_{j=2}^{k_i} log(j)$.
 
-Next, we will look at a few bar plots for the English langauge to get a visual idea of the degree distribution. 
+Next, we will look at a few bar plots for the English langauge to get a visual idea of the degree distribution. We can see from figures 1 and 2 below that nodes with small out-degree are more common than nodes with high out-degree.
 
-```{r barplot, echo=FALSE, out.width="230px", out.height="230px", fig.align="center"}
+```{r barplot1, echo=FALSE, out.width="250px", out.height="250px", fig.align="center", fig.cap = "English out-degree distribution"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices")
+```
+
+```{r barplot2, echo=FALSE, out.width="250px", out.height="250px", fig.align="center", fig.cap = "English out-degree distribution (loglog scale)"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices", log = "xy")
 ```
 
-We can see from the above plots that nodes with small out-degree are more common than nodes with high out-degree.
 
 # Results
 Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. These consist of the following:
@@ -292,7 +290,7 @@ aic_table <- as.data.table(aic_c_table[2])
 ```
 
 ```{r echo=FALSE}
-kable(coeffs_table)
+kable(coeffs_table, caption="\\label{tab:table2}TODO")
 ```
 
 Before proceeding onto computing the delta AIC and select the best model, we should first check that
@@ -322,13 +320,13 @@ names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_ma
 names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
 
-kable(coeffs_table_test)
+kable(coeffs_table_test, caption="\\label{tab:table3}TODO")
 ```
 
 And the delta AIC one:
 
 ```{r echo=FALSE}
-kable(aic_table_test)
+kable(aic_table_test,  caption="\\label{tab:table4}TODO")
 ```
 
 As we can see, in this delta AIC table we can see that the preferred and selected method is the 
@@ -355,12 +353,12 @@ aic_table_test <- as.data.table(aic_c_table_test[2])
 names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
 names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
-kable(coeffs_table_test)
+kable(coeffs_table_test,  caption="\\label{tab:table5}TODO")
 ```
 
 And for the delta AIC:
 ```{r echo=FALSE}
-kable(aic_table_test)
+kable(aic_table_test,  caption="\\label{tab:table6}TODO")
 ```
 
 In this case, we can see that it is always selecting the Right-truncated zeta.
@@ -372,7 +370,7 @@ for each method and compute the AIC for the real cases.
 Once computed, we can produce the delta table by substracting the best AIC of each Language
 from the other methods' AIC. The resulting table is the following:
 ```{r echo=FALSE}
-kable(aic_table)
+kable(aic_table,  caption="\\label{tab:table7}TODO")
 ```
 
 We can see that, in the case of the out-degree  sequence, the method what works best is
