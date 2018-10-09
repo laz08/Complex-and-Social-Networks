@@ -290,7 +290,11 @@ aic_table <- as.data.table(aic_c_table[2])
 ```
 
 ```{r echo=FALSE}
-kable(coeffs_table, caption="\\label{tab:table2} Summary of the most likely parameters")
+kable(coeffs_table, 
+      caption="\\label{tab:table2} Summary of the most likely parameters",
+      col.names = c("Language", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$"),
+      align=rep('c', 6))
+      
 ```
 
 Before proceeding onto computing the delta AIC and select the best model, we should first check that
