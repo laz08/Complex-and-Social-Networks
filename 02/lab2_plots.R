@@ -1,22 +1,26 @@
-install.packages("ggplot2")
-library(ggplot2)
+#install.packages("ggplot2")
+#library(ggplot2)
 
-setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
-degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
-degree_sequence = read.table("./data/Chinese_out-degree_sequence.txt", header = FALSE)
-degree_sequence = read.table("./data/Basque_out-degree_sequence.txt", header = FALSE)
-degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt", header = FALSE)
-degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_zeta_with_parameter_1.5.txt", header = FALSE)
+#setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
+#degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
+#degree_sequence = read.table("./data/Chinese_out-degree_sequence.txt", header = FALSE)
+#degree_sequence = read.table("./data/Basque_out-degree_sequence.txt", header = FALSE)
+#degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt", header = FALSE)
+#degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_zeta_with_parameter_1.5.txt", header = FALSE)
 
 ######## Plotting Data vs Geometric ######## 
 
+# Function for geometric distribution
 g_dist <- function(x, q){
   k = x
   return( ( (1-q)^(k-1) ) * q )
 }
 
 
-geom_plot <- function(degree_sequence, q){
+geom_plot <- function(file, q){
+  
+  degree_sequence = read.table(file, header = FALSE)
+  
   # Prepare data frame
   N = length(degree_sequence$V1) # number of nodes in network
   max_d = max(degree_sequence$V1) # largest degree in network
@@ -40,19 +44,19 @@ geom_plot <- function(degree_sequence, q){
     theme(plot.title = element_text(hjust = 0.5))
 }
 
-geom_plot(degree_sequence, .1)
-
-
 ######## Plotting Data vs Zeta ######## 
 
+# Function for Zeta Right-Truncated distribution
 z_dist <- function(x, maxdegree, gamma){
   k = x
   h = sum(seq(1,maxdegree)^(-gamma))
   return( k^(-gamma)/h )
 }
 
-
-zeta_plot <- function(degree_sequence, gamma){
+zeta_plot <- function(file, gamma){
+  
+  degree_sequence = read.table(file, header = FALSE)
+  
   # Prepare data frame
   N = length(degree_sequence$V1) # number of nodes in network
   max_d = max(degree_sequence$V1) # largest degree in network
@@ -72,11 +76,12 @@ zeta_plot <- function(degree_sequence, gamma){
     scale_y_continuous(trans='log10', limits=c(min_p, max_p+.01)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
-    labs(title="TODO: Change title")+
+    labs(title="Right-Truncated Zeta Distribution vs. Actual Data")+
     theme(plot.title = element_text(hjust = 0.5))
 }
 
-zeta_plot(degree_sequence, 1.52)
+#zeta_plot(degree_sequence, 1.52)
+#geom_plot(degree_sequence, .1)
 
 
 
