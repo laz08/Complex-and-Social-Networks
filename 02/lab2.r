@@ -54,10 +54,6 @@ if(USE_OUT_DEGREE_SEQ){
 
 ########### Minus Log-likelihood Functions ########### 
 
-get_H <- function(k, gamma) {
-  return(sum(seq(1, k)^(-gamma)))
-}
-
 get_AIC <- function(m2logL,K,N) {
   m2logL + 2*K*N/(N-K-1) # AIC with a correction for sample size
 }
@@ -140,8 +136,8 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     }
     
     # Minus log-likelihood right-truncated zeta
-    minus_log_likelihood_zeta3 <- function(gamma){
-      gamma * MP + N * log(get_H(maxDegree, gamma))
+    minus_log_likelihood_zeta3 <- function(gamma, k){
+      gamma * MP + N * log(sum(seq(1, k)^(-gamma)))
     }
     
     # Altmann function
@@ -171,22 +167,22 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     lower = c(1.00000001))
 
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
-                    start = list(gamma = 2), #Alternatively, k = N
+                    start = list(gamma = 2, k = maxDegree), 
                     method = "L-BFGS-B",
-                    lower = c(1.001, N))
+                    lower = c(1.00000001, N))
 
     
     vec <- c(
-        attributes(summary(mle_poisson))$coef[1],
-        attributes(summary(mle_geometric))$coef[1],
-        attributes(summary(mle_zeta))$coef[1],
-        2,
-        attributes(summary(mle_zeta3))$coef[1],
-        get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta2))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta3))$m2logL, 1, N)
+        round(attributes(summary(mle_poisson))$coef[1], digits=3),
+        round(attributes(summary(mle_geometric))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta3))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta3))$coef[2], digits=3),
+        round(get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta2))$m2logL, 0, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta3))$m2logL, 2, N), digits=3)
     )
 
     return(vec)
@@ -197,19 +193,19 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 ########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
     coeff_table <- data.table("Language" = character(),
-                          "\u03BB" = numeric(),
+                          "lambda" = numeric(),
                           "q" = numeric(),
-                          "\u03B3 1" = numeric(),
-                          "\u03B3 2" = numeric(),
+                          "gamma " = numeric(),
+                          "gamma3" = numeric(),
                           "k_max" = numeric(),
                           stringsAsFactors = FALSE)
     
     aic_table <- data.table("Language" = character(),
                           "Poisson" = numeric(),
                           "Geometric" = numeric(),
-                          "Zeta gamma 2" = numeric(),
-                          "Zeta" = numeric(),
-                          "RT Zeta" = numeric(),
+                          "(Zeta)" = numeric(),
+                          "(Zeta gamma2)" = numeric(),
+                          "(RT Zeta)" = numeric(),
                           stringsAsFactors = FALSE)
     
     for (i in seq(length(summary_table$Language))) {
@@ -235,10 +231,8 @@ compute_coeffs_table <- function(summary_table) {
 
 
 out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
-(summary_table <- create_sum_table(out_source))
+summary_table <- create_sum_table(out_source)
 aic_c_table <- compute_coeffs_table(summary_table)
-aic_c_table
-
 coeffs_table <- as.data.table(aic_c_table[1])
 aic_table <-  as.data.table(aic_c_table[2])
 
@@ -280,17 +274,10 @@ coeffs_table_test <- as.data.table(aic_c_table_test[1])
 aic_table_test <- as.data.table(aic_c_table_test[2])
 
 
-names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
-names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+names(coeffs_table_test) <- c("Test Distribution", "Lambda", "q", "gamma 1", "gamma 3", "k_max")
+names(aic_table_test) <- c("Test Distribution", "Poisson", "Geometric", "Zeta", "(Zeta gamma 2)", "(RT Zeta)")
 
 
 coeffs_table_test
 aic_table_test
 
-# OK for right-truncated zeta.
-
-
-for (file in out_source$file) {
-    geom_plot(degree_sequence, .1)
-    zeta_plot(degree_sequence, 1.52)
-}
