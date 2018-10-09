@@ -366,8 +366,8 @@ kable(aic_table_test)
 In this case, we can see that it is always selecting the Right-truncated zeta.
 
 ## Test conclusions
-Having obtained these parameters, we can now proceed to obtain the -2 log Likelihood 
-for each method and compute the AIC. 
+Having obtained the parameters and checked our methods, we can now proceed to obtain the -2 log Likelihood 
+for each method and compute the AIC for the real cases.
 
 Once computed, we can produce the delta table by substracting the best AIC of each Language
 from the other methods' AIC. The resulting table is the following:
@@ -381,12 +381,79 @@ the right-truncated zeta one.
 
 # Discussion
 
-```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
-#geom_plot(outsource[1,2], .1)
-#zeta_plot(degree_sequence, 1.52)
+To verify this model selection, we are now going to check how the real data 
+aligns with the distribution itself. 
 
-## TODO Plot for Basque, Chinese and English SEPARATELY
+To do so, we are going to work with three very distinct languages: 
+
+- __English__, which uses many Greek and Latin roots.
+- __Chinese__, whose procedence is totally unrelated with no roots to Greek and Latin whatsoever.
+- __Basque__, whose procedence is unknown and is also unrelated to Greek and Latin.
+
+## English comparison with RT Zeta.
+
+```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 6    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+coeff = coeffs_table[lang_idx, 6]
+
+zeta_plot(seq, coeff, lang)
 
 ```
+
+As we can see, the Right truncated  Zeta distribution fits well with the data's observations
+for the coefficient of gamma obtained in the case of English.
+
+
+
+## Chinese comparison with RT Zeta.
+
+```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 4    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+coeff = coeffs_table[lang_idx, 6]
+
+zeta_plot(seq, coeff, lang)
+
+```
+
+As we can see, the Right truncated  Zeta distribution fits well with the data's observations
+for the coefficient of gamma obtained in the case of Chinese as well.
+
+
+## Basque comparison with RT Zeta.
+
+```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 2    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+coeff = coeffs_table[lang_idx, 6]
+
+zeta_plot(seq, coeff, lang)
+
+```
+
+As we can see, the Right truncated  Zeta distribution does not fit as well as with the other
+2 languages, but still takes into account the tail on the far right.
+
+
+
 
 # Methods
