@@ -240,7 +240,7 @@ In our case, we have chosen to work with the out-degree one for 10 different lan
 - Geometric distribution ($q$ parameter)
 - Zeta distribution ($\gamma$ parameter)
 - Zeta distribution ($\gamma = 2$ parameter)
-- Right truncated distribution ($\gamma$ and $k_{max}$ parameteres)
+- Right truncated distribution ($\gamma$ and $k_{max}$ parameters)
 - Altmann distribution ($k_{max}$, $\delta$, and $\gamma$ parameters)
 
 The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N), the maximum degree, among others. Additionally, to make our computations easier we have added a couple of metrics that we were not required, namely MP and C. The metrics of the English out-degree sequence can be seen in the following table.
@@ -290,7 +290,7 @@ aic_table <- as.data.table(aic_c_table[2])
 ```
 
 ```{r echo=FALSE}
-kable(coeffs_table, caption="\\label{tab:table2}TODO")
+kable(coeffs_table, caption="\\label{tab:table2} Summary of the most likely parameters")
 ```
 
 Before proceeding onto computing the delta AIC and select the best model, we should first check that
@@ -320,13 +320,13 @@ names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_ma
 names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
 
-kable(coeffs_table_test, caption="\\label{tab:table3}TODO")
+kable(coeffs_table_test, caption="\\label{tab:table3}Summary of the most likely parameters for geometric test sequence")
 ```
 
 And the delta AIC one:
 
 ```{r echo=FALSE}
-kable(aic_table_test,  caption="\\label{tab:table4}TODO")
+kable(aic_table_test,  caption="\\label{tab:table4}AIC difference of the Geometric test model")
 ```
 
 As we can see, in this delta AIC table we can see that the preferred and selected method is the 
@@ -353,24 +353,24 @@ aic_table_test <- as.data.table(aic_c_table_test[2])
 names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
 names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
-kable(coeffs_table_test,  caption="\\label{tab:table5}TODO")
+kable(coeffs_table_test,  caption="\\label{tab:table5} Summary of the most likely parameters for Zeta test sequence")
 ```
 
 And for the delta AIC:
 ```{r echo=FALSE}
-kable(aic_table_test,  caption="\\label{tab:table6}TODO")
+kable(aic_table_test,  caption="\\label{tab:table6} AIC difference of the Zeta test model")
 ```
 
 In this case, we can see that it is always selecting the Right-truncated zeta.
 
-## Test conclusions
+# Delta AIC of our models
 Having obtained the parameters and checked our methods, we can now proceed to obtain the -2 log Likelihood 
 for each method and compute the AIC for the real cases.
 
 Once computed, we can produce the delta table by substracting the best AIC of each Language
 from the other methods' AIC. The resulting table is the following:
 ```{r echo=FALSE}
-kable(aic_table,  caption="\\label{tab:table7}TODO")
+kable(aic_table,  caption="\\label{tab:table7}  AIC difference of our different languages' models")
 ```
 
 We can see that, in the case of the out-degree  sequence, the method what works best is
@@ -379,8 +379,7 @@ the right-truncated zeta one.
 
 # Discussion
 
-To verify this model selection, we are now going to check how the real data 
-aligns with the distribution itself. 
+To verify this model selection, we are now going to check how the real data aligns with the distribution itself. 
 
 To do so, we are going to work with three very distinct languages: 
 
