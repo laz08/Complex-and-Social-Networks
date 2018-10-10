@@ -6,6 +6,10 @@ date: "October 7th, 2018"
 output: pdf_document
 ---
 
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'h')
+```
+
 ```{r setup, include=FALSE}
 requiredPackages <- c("igraph", "ggplot2", "data.table", "expss", "stats4", "VGAM", "knitr", "rmarkdown")
 for (pac in requiredPackages) {
@@ -404,7 +408,7 @@ To do so, we are going to work with three very distinct languages:
 
 ## English comparison with RT Zeta.
 
-```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -413,9 +417,10 @@ lang_idx = 6    # Selects the language from the tables (which row).
 lang = out_source[lang_idx, 1]
 file = out_source[lang_idx, 2]
 seq = read.table(file, header = FALSE)
-coeff = coeffs_table[lang_idx, 6]
+coeff = coeffs_table[lang_idx, 5]
+maxdegree = coeffs_table[lang_idx, 6]
 
-zeta_plot(seq, coeff, lang)
+zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
@@ -426,7 +431,7 @@ for the coefficient of gamma obtained in the case of English.
 
 ## Chinese comparison with RT Zeta.
 
-```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -435,9 +440,10 @@ lang_idx = 4    # Selects the language from the tables (which row).
 lang = out_source[lang_idx, 1]
 file = out_source[lang_idx, 2]
 seq = read.table(file, header = FALSE)
-coeff = coeffs_table[lang_idx, 6]
+coeff = coeffs_table[lang_idx, 5]
+maxdegree = coeffs_table[lang_idx, 6]
 
-zeta_plot(seq, coeff, lang)
+zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
@@ -447,7 +453,7 @@ for the coefficient of gamma obtained in the case of Chinese as well.
 
 ## Basque comparison with RT Zeta.
 
-```{r  warning=FALSE, echo=FALSE, out.width="250px", out.height="250px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -456,9 +462,10 @@ lang_idx = 2    # Selects the language from the tables (which row).
 lang = out_source[lang_idx, 1]
 file = out_source[lang_idx, 2]
 seq = read.table(file, header = FALSE)
-coeff = coeffs_table[lang_idx, 6]
+coeff = coeffs_table[lang_idx, 5]
+maxdegree = coeffs_table[lang_idx, 6]
 
-zeta_plot(seq, coeff, lang)
+zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
@@ -466,6 +473,21 @@ As we can see, the Right truncated  Zeta distribution does not fit as well as wi
 2 languages, but still takes into account the tail on the far right.
 
 This is probably due to the dot on the far left, top corner, that changes the slope slightly.
+
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 2    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+coeff = coeffs_table[lang_idx, 3]
+
+geom_plot(seq, coeff, lang)
+
+```
 
 
 # Methods
