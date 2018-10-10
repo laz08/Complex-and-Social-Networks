@@ -90,6 +90,7 @@ create_sum_table <- function(source){
 }               
 
 
+
 ###########  Estimating log-likelihood parameters ########### 
 compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
 
@@ -114,8 +115,8 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     }
     
     # Minus log-likelihood right-truncated zeta
-    minus_log_likelihood_zeta3 <- function(gamma){
-      gamma * MP + N * log(get_H(maxDegree, gamma))
+    minus_log_likelihood_zeta3 <- function(gamma, k){
+      gamma * MP + N * log(sum(seq(1, k)^(-gamma)))
     }
     
     # Altmann function
@@ -144,48 +145,44 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
                     method = "L-BFGS-B",
                     lower = c(1.00000001))
 
-    # TODO: Check warning below. Doesn't look good.
-    # Update 6/10: Check there is still warnings. Was using length(x) instead of N (wrong)
     mle_zeta3 <- mle(minus_log_likelihood_zeta3,
-                    start = list(gamma = 2), #Alternatively, k = N
+                    start = list(gamma = 2, k = maxDegree), 
                     method = "L-BFGS-B",
-                    lower = c(1.001, N))
+                    lower = c(1.00000001, N))
 
     
     vec <- c(
-        attributes(summary(mle_poisson))$coef[1],
-        attributes(summary(mle_geometric))$coef[1],
-        attributes(summary(mle_zeta))$coef[1],
-        2,
-        attributes(summary(mle_zeta3))$coef[1],
-        get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta2))$m2logL, 1, N),
-        get_AIC(attributes(summary(mle_zeta3))$m2logL, 1, N)
+        round(attributes(summary(mle_poisson))$coef[1], digits=3),
+        round(attributes(summary(mle_geometric))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta3))$coef[1], digits=3),
+        round(attributes(summary(mle_zeta3))$coef[2], digits=3),
+        round(get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta2))$m2logL, 0, N), digits=3),
+        round(get_AIC(attributes(summary(mle_zeta3))$m2logL, 2, N), digits=3)
     )
 
     return(vec)
 }
-
-
 
 ########### MODEL SELECTION ########### 
 compute_coeffs_table <- function(summary_table) {
     coeff_table <- data.table("Language" = character(),
                           "lambda" = numeric(),
                           "q" = numeric(),
-                          "gamma 1" = numeric(),
-                          "gamma 2" = numeric(),
+                          "gamma " = numeric(),
+                          "gamma3" = numeric(),
                           "k_max" = numeric(),
                           stringsAsFactors = FALSE)
     
     aic_table <- data.table("Language" = character(),
                           "Poisson" = numeric(),
                           "Geometric" = numeric(),
-                          "Zeta gamma = 2" = numeric(),
-                          "Zeta" = numeric(),
-                          "RT Zeta" = numeric(),
+                          "(Zeta)" = numeric(),
+                          "(Zeta gamma2)" = numeric(),
+                          "(RT Zeta)" = numeric(),
                           stringsAsFactors = FALSE)
     
     for (i in seq(length(summary_table$Language))) {
@@ -265,8 +262,7 @@ Next, we will look at a few bar plots for the English langauge to get a visual i
 ```{r barplot1, echo=FALSE, out.width="250px", out.height="250px", fig.align="center", fig.cap = "English out-degree distribution"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices")
 ```
-
-```{r barplot2, echo=FALSE, out.width="250px", out.height="250px", fig.align="center", fig.cap = "English out-degree distribution (loglog scale)"}
+```{r barplot2, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "English out-degree distribution (loglog scale)"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices", log = "xy")
 ```
 
@@ -281,7 +277,7 @@ Having computed the basic metrics, we now proceed to compute the most likely par
 
 Using the out-degree sequences for each different language, we have obtained
 the following coeffcients for each one of them:
-```{r comp_tables, include=FALSE, echo=FALSE}
+```{r comp_tables, include=FALSE, echo=FALSE, warning=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
 
 coeffs_table <- as.data.table(aic_c_table[1])
@@ -289,7 +285,7 @@ aic_table <- as.data.table(aic_c_table[2])
 
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 kable(coeffs_table, 
       caption="\\label{tab:table2} Summary of the most likely parameters",
       col.names = c("Language", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$"),
@@ -306,7 +302,7 @@ In order to verify the methods we have used to compute the minus log-likelihood 
 
 For the different instances of the geometric test table, we have computed first the coefficients table:
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 
 geometric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
                              header = FALSE)
@@ -321,16 +317,22 @@ coeffs_table_test <- as.data.table(aic_c_table_test[1])
 aic_table_test <- as.data.table(aic_c_table_test[2])
 
 names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
-names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta", "Zeta gamma 2", "RT Zeta")
 
 
-kable(coeffs_table_test, caption="\\label{tab:table3}Summary of the most likely parameters for geometric test sequence")
+kable(coeffs_table_test, 
+      caption="\\label{tab:table3}Summary of the most likely parameters for geometric test sequence",
+      col.names = c("Test Data", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$"),
+      align=rep('c', 6))
 ```
 
 And the delta AIC one:
 
-```{r echo=FALSE}
-kable(aic_table_test,  caption="\\label{tab:table4}AIC difference of the Geometric test model")
+```{r echo=FALSE, warning=FALSE}
+kable(aic_table_test,  
+      caption="\\label{tab:table4}AIC difference of the Geometric test model",
+      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
+      align=rep('c', 6))
 ```
 
 As we can see, in this delta AIC table we can see that the preferred and selected method is the 
@@ -342,7 +344,7 @@ geometric one. So in this case, the test is passed.
 Now we are going to apply the test methodology with theoretical zeta distributions.
 
 For the case of the coefficients table we get the results below:
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 
 zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
 
@@ -357,12 +359,18 @@ aic_table_test <- as.data.table(aic_c_table_test[2])
 names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
 names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
-kable(coeffs_table_test,  caption="\\label{tab:table5} Summary of the most likely parameters for Zeta test sequence")
+kable(coeffs_table_test,  
+      caption="\\label{tab:table5} Summary of the most likely parameters for Zeta test sequence",
+      col.names = c("Test Data", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$"),
+      align=rep('c', 6))
 ```
 
 And for the delta AIC:
-```{r echo=FALSE}
-kable(aic_table_test,  caption="\\label{tab:table6} AIC difference of the Zeta test model")
+```{r echo=FALSE, warning=FALSE}
+kable(aic_table_test,  
+      caption="\\label{tab:table6} AIC difference of the Zeta test model",
+      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
+      align=rep('c', 6))
 ```
 
 In this case, we can see that it is always selecting the Right-truncated zeta.
@@ -373,8 +381,11 @@ for each method and compute the AIC for the real cases.
 
 Once computed, we can produce the delta table by substracting the best AIC of each Language
 from the other methods' AIC. The resulting table is the following:
-```{r echo=FALSE}
-kable(aic_table,  caption="\\label{tab:table7}  AIC difference of our different languages' models")
+```{r echo=FALSE, warning=FALSE}
+kable(aic_table,  
+      caption="\\label{tab:table7}  AIC difference of our different languages' models",
+      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
+      align=rep('c', 6))
 ```
 
 We can see that, in the case of the out-degree  sequence, the method what works best is

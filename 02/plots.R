@@ -1,9 +1,5 @@
 
 degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
-# degree_sequence = read.table("./data/Chinese_out-degree_sequence.txt", header = FALSE)
-# degree_sequence = read.table("./data/Basque_out-degree_sequence.txt", header = FALSE)
-# degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt", header = FALSE)
-# degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_zeta_with_parameter_1.5.txt", header = FALSE)
 
 ######## Plotting Data vs Geometric ######## 
 
