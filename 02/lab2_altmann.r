@@ -17,41 +17,6 @@ if(grepl("nora", wd)) {
 }
 rm(wd)
 
-#####################################################################
-### FLAGS
-
-PLOT_GRAPHICS = TRUE
-USE_OUT_DEGREE_SEQ = TRUE
-
-#####################################################################
-
-if(USE_OUT_DEGREE_SEQ){
-  degree_sequence = read.table("./data/English_out-degree_sequence.txt",
-                               header = FALSE)
-  num_nodes <- nrow(degree_sequence)
-  sum_degree <- sum(degree_sequence)
-  mean_degree <- sum(degree_sequence)/dim(degree_sequence)[1]
-  
-  
-  # Remove nodes of out-degree 0 (k=0)
-  degree_sequence$V1 <- degree_sequence[!(degree_sequence$V1==0),]
-  
-  
-  # Barplots of data
-  degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
-  degree_spectrum = table(degree_sequence)
-  x <- degree_sequence$V1
-  M <- sum(x)
-  N <- length(x)
-  
-  if(PLOT_GRAPHICS){
-    barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices")
-    barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "xy")
-    barplot(degree_spectrum, main = "English", xlab = "degree", ylab = "number of vertices", log = "y")
-  }
-  
-}
-
 ########### Minus Log-likelihood Functions ########### 
 
 get_AIC <- function(m2logL,K,N) {
@@ -142,13 +107,10 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, deg_seq){
   
   # Altmann function
   minus_log_likelihood_altmann <- function(gamma, delta, dat){
-
-    c <- 1/sum(seq(1:N)^(-gamma)*exp(-delta*seq(1:N)))
-    
-    -log(c) - sum(log(dat)) * gamma + delta * sum(dat)
-  
+      c <- 1/sum(seq(1:N)^(-gamma)*exp(-delta*seq(1:N)))
+      -1 * sum(log(c) - log(dat) * gamma - delta * dat)
   }
-
+  
   mle_poisson <- mle(minus_log_likelihood_poisson,
                      start = list(lambda = M/N),
                      method = "L-BFGS-B",
@@ -175,13 +137,12 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, deg_seq){
                    method = "L-BFGS-B",
                    lower = c(1.00000001, N))
   
-  mle_altmann <- mle(minus_log_likelihood_altmann,
-                   start = list(gamma = 1, delta = 1), 
-                   fixed = list(dat = deg_seq),
-                   method = "L-BFGS-B",
-                   lower = c(0.00001, .00001),
-                   upper = c(1,1))
   
+  mle_altmann <- mle(minus_log_likelihood_altmann,
+                     start = list(gamma = 1, delta = 1), 
+                     fixed = list(dat = deg_seq),
+                     method = "L-BFGS-B",
+                     lower = c(0.0001, 0.0001))
   
   vec <- c(
     round(attributes(summary(mle_poisson))$coef[1], digits=3),
@@ -236,14 +197,14 @@ compute_coeffs_table <- function(summary_table, out_source) {
     deg_seq = deg_seq$V1
     resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C, deg_seq)
     g <- as.list(resultList[1:7])
-    h <- as.list(resultList[8:12])
+    h <- as.list(resultList[8:13])
     coeff_table <- rbind(coeff_table, c(language, g))
     aic_table <- rbind(aic_table, c(language, h))
   }
   
   # Computing delta: AIC - best AIC 
   for (i in seq(length(aic_table$'Poisson'))) {
-    aic_table[i, 2:6] <- aic_table[i, 2:6] - min(aic_table[i, 2:6])
+    aic_table[i, 2:7] <- aic_table[i, 2:7] - min(aic_table[i, 2:7])
   }
   return(list(coeff_table, aic_table))
 }
