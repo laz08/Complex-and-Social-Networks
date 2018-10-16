@@ -142,7 +142,11 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C){
     
     # Altmann function
     minus_log_likelihood_altmann <- function(lambda, delta){
-      c * maxDegree^(-lambda) * e^(-delta * maxDegree)
+      
+      c = 0
+      sum(seq(1:n)*k)
+      
+      sum(log(c * k^(-lambda) * e^(-delta * kx)))
     }
     
     mle_poisson <- mle(minus_log_likelihood_poisson,
