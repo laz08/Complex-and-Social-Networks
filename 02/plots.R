@@ -26,7 +26,7 @@ geom_plot <- function(degree_sequence, q, language){
     geom_point( aes(y=Freq), colour="blue") +  # first layer is point graph
     geom_line( aes(y=gFreq), colour = "red") + # second layer is a line graph
     scale_x_continuous(trans='log10', limits=(c(1,10000))) + # sets x-axis to log10 scale
-    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.01)) +   # sets y-axis to log10 scale
+    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
     labs(title=paste("Geometric distribution comparison with", language, sep= " "))+
@@ -60,7 +60,7 @@ zeta_plot <- function(degree_sequence, maxdegree, gamma, language){
     geom_point( aes(y=Freq), colour="blue") +  # first layer is point graph
     geom_line( aes(y=gFreq), colour = "green") + # second layer is a line graph
     scale_x_continuous(trans='log10', limits=(c(1,10000))) + # sets x-axis to log10 scale
-    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.01)) +   # sets y-axis to log10 scale
+    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
     labs(title=paste("Right Truncated Zeta distribution comparison with", language, sep= " "))+
@@ -92,11 +92,12 @@ altmann_plot <- function(degree_sequence, gamma, delta, language){
   ggplot(df, aes(degree_sequence)) + 
     geom_point( aes(y=Freq), colour="blue") +  # first layer is point graph
     geom_line( aes(y=gFreq), colour = "green") + # second layer is a line graph
-    scale_x_continuous(trans='log10', limits=(c(1,10000))) + # sets x-axis to log10 scale
-    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.02)) +   # sets y-axis to log10 scale
+    scale_x_continuous(trans='log10', limits=(c(.99,10000))) + # sets x-axis to log10 scale
+    scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
     labs(title=paste("Altmann distribution with", language, sep= " "))+
     theme(plot.title = element_text(hjust = 0.5))
 }
 
+altmann_plot(degree_sequence, 1.25, .011, "English")
