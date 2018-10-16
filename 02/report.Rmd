@@ -513,5 +513,22 @@ kable(coeffs_table_alt,
 ```
 
 
+## English comparison with Altmann
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 2    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+a_gamma = coeffs_table_alt[lang_idx, 7]
+a_delta = coeffs_table_alt[lang_idx, 8]
+
+altmann_plot(seq, a_gamma, a_delta, lang)
+
+```
+
 
 # Methods
