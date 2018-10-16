@@ -71,16 +71,6 @@ get_C <- function(x) { C = 0
   return(C)
 }
 
-get_c <- function(x, lambda, delta){ 
-  c = 0
-  for (k in 1:length(x)){
-    c = c + ( k^(-lambda) * exp(-delta * k) )
-  }
-  return(1/c)
-  
-}
-
-
 ############# Creating summary table
 
 write_summary <- function(language,file) {

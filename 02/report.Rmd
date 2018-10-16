@@ -242,7 +242,7 @@ In our case, we have chosen to work with the out-degree one for 10 different lan
 - Zeta distribution ($\gamma$ parameter)
 - Zeta distribution ($\gamma = 2$ parameter)
 - Right truncated distribution ($\gamma$ and $k_{max}$ parameters)
-- Altmann distribution ($k_{max}$, $\delta$, and $\gamma$ parameters)
+- Altmann distribution ($\delta$, and $\gamma$ parameters)
 
 The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N), the maximum degree, among others. Additionally, to make our computations easier we have added a couple of metrics that we were not required, namely MP and C. The metrics of the English out-degree sequence can be seen in the following table.
 
@@ -488,6 +488,30 @@ coeff = coeffs_table[lang_idx, 3]
 geom_plot(seq, coeff, lang)
 
 ```
+
+Next, we add the Altmann function to our set of distributions, to see if it will provide a better fit of our data. 
+
+```{r echo=FALSE, warning=FALSE}
+source("lab2_altmann.r")
+aic_c_table_alt <- compute_coeffs_table_alt(summary_table, out_source)
+coeffs_table_alt <- as.data.table(aic_c_table_alt[1])
+aic_table_alt <-  as.data.table(aic_c_table_alt[2])
+
+kable(aic_table_alt,  
+      caption="\\label{tab:table8}  AIC difference of our different languages' models",
+      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta", "Altmann"),
+      align=rep('c', 7))
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+kable(coeffs_table_alt,  
+      caption="\\label{tab:table9} Summary of the most likely parameters for Zeta test sequence",
+      col.names = c("Test Data", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$", "$\\gamma$", "$\\delta$"),
+      align=rep('c', 8))
+
+```
+
 
 
 # Methods

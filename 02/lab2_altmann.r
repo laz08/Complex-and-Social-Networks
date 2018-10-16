@@ -1,21 +1,3 @@
-requiredPackages <- c("igraph", "ggplot2", "data.table", "expss", "stats4", "VGAM")
-for (pac in requiredPackages) {
-  if(!require(pac,  character.only=TRUE)){
-    install.packages(pac, repos="http://cran.rstudio.com")
-    library(pac,  character.only=TRUE)
-  } 
-}
-rm(pac)
-rm(requiredPackages)
-
-# Set WD and load data
-wd = getwd()
-if(grepl("nora", wd)) {
-  setwd("~/git/csn-labs/02")
-} else {
-  setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
-}
-rm(wd)
 
 ########### Minus Log-likelihood Functions ########### 
 
@@ -35,16 +17,6 @@ for(i in x){
 } 
 return(C)
 }
-
-get_c <- function(x, lambda, delta){ 
-  c = 0
-  for (k in 1:length(x)){
-    c = c + ( k^(-lambda) * exp(-delta * k) )
-  }
-  return(1/c)
-  
-}
-
 
 ############# Creating summary table
 
@@ -78,7 +50,7 @@ create_sum_table <- function(source){
 
 
 ###########  Estimating log-likelihood parameters ########### 
-compute_log_likelihoods <- function(M, N, maxDegree, MP, C, deg_seq){
+compute_log_likelihoods_alt <- function(M, N, maxDegree, MP, C, deg_seq){
   
   # Displaced Poisson function
   minus_log_likelihood_poisson <- function(lambda){
@@ -166,7 +138,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, deg_seq){
 
 
 ########### MODEL SELECTION ########### 
-compute_coeffs_table <- function(summary_table, out_source) {
+compute_coeffs_table_alt <- function(summary_table, out_source) {
   coeff_table <- data.table("Language" = character(),
                             "lambda" = numeric(),
                             "q" = numeric(),
@@ -195,7 +167,7 @@ compute_coeffs_table <- function(summary_table, out_source) {
     maxDegree <- summary_table[i]$`Maximum Degree`
     deg_seq = read.table(out_source$file[i], header = FALSE)
     deg_seq = deg_seq$V1
-    resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C, deg_seq)
+    resultList <- compute_log_likelihoods_alt(M, N, maxDegree, MP, C, deg_seq)
     g <- as.list(resultList[1:7])
     h <- as.list(resultList[8:13])
     coeff_table <- rbind(coeff_table, c(language, g))
@@ -212,52 +184,10 @@ compute_coeffs_table <- function(summary_table, out_source) {
 
 out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
 summary_table <- create_sum_table(out_source)
-aic_c_table <- compute_coeffs_table(summary_table, out_source)
-coeffs_table <- as.data.table(aic_c_table[1])
-aic_table <-  as.data.table(aic_c_table[2])
+aic_c_table_alt <- compute_coeffs_table_alt(summary_table, out_source)
+coeffs_table_alt <- as.data.table(aic_c_table_alt[1])
+aic_table_alt <-  as.data.table(aic_c_table_alt[2])
 
-coeffs_table
-aic_table
-
-
-
-########### Testing models on contrived data ########### 
-
-geometric_01 = read.table("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.1.txt",
-                          header = FALSE)
-
-
-geom_source = read.table("./list_geometric.txt", header = TRUE, as.is = c("language","file")) # For testing 
-
-(test_table <- create_sum_table(geom_source))
-aic_c_table_test <- compute_coeffs_table(test_table)
-
-coeffs_table_test <- as.data.table(aic_c_table_test[1])
-aic_table_test <- as.data.table(aic_c_table_test[2])
-
-names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
-names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
-
-
-coeffs_table_test
-aic_table_test
-
-# OK for geom. distrib.
-
-zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
-
-(test_table <- create_sum_table(zeta_source))
-aic_c_table_test <- compute_coeffs_table(test_table)
-
-
-coeffs_table_test <- as.data.table(aic_c_table_test[1])
-aic_table_test <- as.data.table(aic_c_table_test[2])
-
-
-names(coeffs_table_test) <- c("Test Distribution", "Lambda", "q", "gamma 1", "gamma 3", "k_max")
-names(aic_table_test) <- c("Test Distribution", "Poisson", "Geometric", "Zeta", "(Zeta gamma 2)", "(RT Zeta)")
-
-
-coeffs_table_test
-aic_table_test
+coeffs_table_alt
+aic_table_alt
 
