@@ -113,7 +113,7 @@ create_sum_table <- function(source){
 
 
 ###########  Estimating log-likelihood parameters ########### 
-compute_log_likelihoods <- function(M, N, maxDegree, MP, C, dat){
+compute_log_likelihoods <- function(M, N, maxDegree, MP, C, deg_seq){
   
   # Displaced Poisson function
   minus_log_likelihood_poisson <- function(lambda){
@@ -148,8 +148,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, dat){
     -log(c) - sum(log(dat)) * gamma + delta * sum(dat)
   
   }
-  minus_log_likelihood_altmann(1,2,sequence)
-  
+
   mle_poisson <- mle(minus_log_likelihood_poisson,
                      start = list(lambda = M/N),
                      method = "L-BFGS-B",
@@ -178,7 +177,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, dat){
   
   mle_altmann <- mle(minus_log_likelihood_altmann,
                    start = list(gamma = 1, delta = 1), 
-                   fixed = dat,
+                   fixed = list(dat = deg_seq),
                    method = "L-BFGS-B",
                    lower = c(0.00001, .00001),
                    upper = c(1,1))
@@ -190,6 +189,7 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, dat){
     round(attributes(summary(mle_zeta))$coef[1], digits=3),
     round(attributes(summary(mle_zeta3))$coef[1], digits=3),
     round(attributes(summary(mle_zeta3))$coef[2], digits=3),
+    round(attributes(summary(mle_altmann))$coef[1], digits=3),
     round(attributes(summary(mle_altmann))$coef[2], digits=3),
     round(get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N), digits=3),
     round(get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N), digits=3),
@@ -205,13 +205,15 @@ compute_log_likelihoods <- function(M, N, maxDegree, MP, C, dat){
 
 
 ########### MODEL SELECTION ########### 
-compute_coeffs_table <- function(summary_table) {
+compute_coeffs_table <- function(summary_table, out_source) {
   coeff_table <- data.table("Language" = character(),
                             "lambda" = numeric(),
                             "q" = numeric(),
                             "gamma " = numeric(),
                             "gamma3" = numeric(),
                             "k_max" = numeric(),
+                            "delta_altmann" = numeric(),
+                            "gamma_altmann" = numeric(),
                             stringsAsFactors = FALSE)
   
   aic_table <- data.table("Language" = character(),
@@ -220,6 +222,7 @@ compute_coeffs_table <- function(summary_table) {
                           "(Zeta)" = numeric(),
                           "(Zeta gamma2)" = numeric(),
                           "(RT Zeta)" = numeric(),
+                          "Altmann" = numeric(),
                           stringsAsFactors = FALSE)
   
   for (i in seq(length(summary_table$Language))) {
@@ -229,9 +232,11 @@ compute_coeffs_table <- function(summary_table) {
     MP <- summary_table[i]$MP
     C <- summary_table[i]$C
     maxDegree <- summary_table[i]$`Maximum Degree`
-    resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C)
-    g <- as.list(resultList[1:5])
-    h <- as.list(resultList[6:10])
+    deg_seq = read.table(out_source$file[i], header = FALSE)
+    deg_seq = deg_seq$V1
+    resultList <- compute_log_likelihoods(M, N, maxDegree, MP, C, deg_seq)
+    g <- as.list(resultList[1:7])
+    h <- as.list(resultList[8:12])
     coeff_table <- rbind(coeff_table, c(language, g))
     aic_table <- rbind(aic_table, c(language, h))
   }
@@ -246,7 +251,7 @@ compute_coeffs_table <- function(summary_table) {
 
 out_source = read.table("list_out.txt", header = TRUE, as.is = c("language","file")) 
 summary_table <- create_sum_table(out_source)
-aic_c_table <- compute_coeffs_table(summary_table)
+aic_c_table <- compute_coeffs_table(summary_table, out_source)
 coeffs_table <- as.data.table(aic_c_table[1])
 aic_table <-  as.data.table(aic_c_table[2])
 
