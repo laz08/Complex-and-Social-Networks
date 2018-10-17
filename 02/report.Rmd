@@ -244,7 +244,7 @@ In our case, we have chosen to work with the out-degree one for 10 different lan
 - Right truncated distribution ($\gamma$ and $k_{max}$ parameters)
 - Altmann distribution ($\delta$, and $\gamma$ parameters)
 
-The first step on the analysis is to compute different metrics for each language, such as the length of the sequence (N), the maximum degree, among others. Additionally, to make our computations easier we have added a couple of metrics that we were not required, namely MP and C. The metrics of the English out-degree sequence can be seen in the following table.
+The first step on the analysis is to compute different metrics for each language. Additionally, to make our computations easier we have added a couple of metrics that we were not required, namely MP and C. The metrics of the English out-degree sequence can be seen in the following table.
 
 
 ```{r include=FALSE, echo=FALSE}
@@ -538,6 +538,19 @@ altmann_plot(seq, a_gamma, a_delta, lang)
 
 # Discussion
 
+Table 1 displays some useful metrics of the out-degree distributios of 10 different languages. A few items stand out: Czech has a maximum degree that nearly doubles every other language, Greek and Basque have far fewer nodes than the rest, and the average degree of English is quite high relative to the other languages. This table gives us some good insight into how the lanugages differ form a high level perspective.
+
+Figures 2 and 3 give a visual representation of the English language out-degree distribution. Figure one really shows that the node degree is concentrated around the smallers numbers, with a very long tail. This long tail makes sense, when we see that the maximum degree of English is over 7,000 and the average degree is 11. 
+
+Table 2 shows the best fit parameters we found from minimizing the minus log-likelihood. By comparing Tables 1 and 2, we can see that theses parameters are quite close to our initial guess. In the English language for example, our initial guess for the parameters were $\lambda$ = 11.25, q = 0.088, $\gamma$ = 2 and kmax = 17,775 and the best fit parameters were $\lambda$ = 11.254, q = 0.089, $\lamda$ = 1.545, and kmax = 17,775. 
+
+Tables 3 and 4 are the results of our Geometric test. Table 3 displays the best fit parameters of 5 data sets consting of geometric distributions with a varying q parameter. We can see that the q parameters our methods chose, were nearly identical to the actual parameters. Table 4 shows delta AIC for the same data sets. We can see that the geometric distribution was chosen correctly for each. 
+
+Tables 5 and 6 are the results of our Zeta distribution test. Table 5 displays the best fit parameters of 5 data sets consisting of Zeta distributions. It's notable that our methods correctly chose the Zeta distribution with the fixed $\gamma = 2$ for the data set with the same parameter. Table 6 is the delta AIC table confirming that Zeta distribution was chosen as best. 
+
+Table 7 is the delta AIC table for the out-degree sequence of the 10 languages. We can see that RT Zeta was chosen in all cases except for Turkish. The Zeta distribution came in a very close second for Arabic and Basque. It's also worth noting that, based on the large values present in this table, Poisson and Geometric distributions should not be used to model out-degree distributions (At least with the langauges studied here). Looking at the large values for most of the languages in the Zeta model with $\gamma = 2$, we can see that the parameter selection is extermely important. 
+
+Figures 3, 4, and 5 ... to be continued
 
 # Methods
 
