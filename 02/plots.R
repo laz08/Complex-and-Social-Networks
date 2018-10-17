@@ -29,7 +29,7 @@ geom_plot <- function(degree_sequence, q, language){
     scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
-    labs(title=paste("Geometric distribution comparison with", language, sep= " "))+
+   # labs(title=paste("Geometric distribution comparison with", language, sep= " "))+
     theme(plot.title = element_text(hjust = 0.5))
 }
 
@@ -63,7 +63,7 @@ zeta_plot <- function(degree_sequence, maxdegree, gamma, language){
     scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
-    labs(title=paste("Right Truncated Zeta distribution comparison with", language, sep= " "))+
+    #labs(title=paste("Right Truncated Zeta distribution comparison with", language, sep= " "))+
     theme(plot.title = element_text(hjust = 0.5))
 }
 
@@ -96,7 +96,7 @@ altmann_plot <- function(degree_sequence, gamma, delta, language){
     scale_y_continuous(trans='log10', limits=c(min_p, max_p+.3)) +   # sets y-axis to log10 scale
     ylab("Probability") + 
     xlab("Degree") + 
-    labs(title=paste("Altmann distribution with", language, sep= " "))+
+   # labs(title=paste("Altmann distribution with", language, sep= " "))+
     theme(plot.title = element_text(hjust = 0.5))
 }
 

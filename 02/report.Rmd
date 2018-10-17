@@ -259,9 +259,11 @@ summary_table <- create_sum_table(out_source)
 kable(summary_table, caption="\\label{tab:table1}Summary Table of English Out-degree Metrics")
 ```
 
+
 In the table 1 above, N represents the number of nodes in the network, M is the sum of degrees of all nodes, Maximum Degree is the largest out-degree, M/N is the average degree, N/M is the inverse of the average degree, MP is the sum of the log of degrees, and C is the the following $\sum_{i=1}^{N} \sum_{j=2}^{k_i} log(j)$.
 
 Next, we will look at a few bar plots for the English langauge to get a visual idea of the degree distribution. We can see from figures 1 and 2 below that nodes with small out-degree are more common than nodes with high out-degree.
+
 
 ```{r barplot1, echo=FALSE, out.width="250px", out.height="250px", fig.align="center", fig.cap = "English out-degree distribution"}
  barplot(degree_spectrum, main = "English", xlab = "out-degree", ylab = "number of vertices")
@@ -271,7 +273,7 @@ Next, we will look at a few bar plots for the English langauge to get a visual i
 ```
 
 
-# Preliminary Results (No Altmann)
+# Results (Without Altmann)
 Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. These consist of the following:
 
 - $\lambda_{0}$ = M/N
@@ -279,8 +281,10 @@ Having computed the basic metrics, we now proceed to compute the most likely par
 - $\gamma_{0}$ = 2
 - $k_{max, 0}$ = N
 
-Using the out-degree sequences for each different language, we have obtained
-the following coeffcients for each one of them:
+Using the out-degree sequences for each different language, we have obtained the following coeffcients (Note that we have not included 
+the coefficient for Zeta distribution with $\gamma = 2$ in any of the coefficient table in this report):
+
+
 ```{r comp_tables, include=FALSE, echo=FALSE, warning=FALSE}
 aic_c_table <- compute_coeffs_table(summary_table)
 
@@ -288,6 +292,7 @@ coeffs_table <- as.data.table(aic_c_table[1])
 aic_table <- as.data.table(aic_c_table[2])
 
 ```
+
 
 ```{r echo=FALSE, warning=FALSE}
 kable(coeffs_table, 
@@ -297,14 +302,15 @@ kable(coeffs_table,
       
 ```
 
-Before proceeding onto computing the delta AIC and select the best model, we should first check that
-our methods have been correctly addressed and implented.
 
-In order to verify the methods we have used to compute the minus log-likelihood parameters, we will test them on contrived data where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. 
+Before proceeding onto computing the delta AIC and selecting the best model, we first check that our methods have been correctly addressed and implented. In order to verify the methods we have used to compute the minus log-likelihood parameters, we will test them on contrived data sets where the distribution is known a priori. We have 8 different data sets that were created using geometric and zeta distributions of varying parameters. 
+
 
 ## Geometric test
 
-For the different instances of the geometric test table, we have computed first the coefficients table:
+
+For the different instances of the geometric test data, we have computed the coefficients and delta AIC tables:
+
 
 ```{r echo=FALSE, warning=FALSE}
 
@@ -330,24 +336,23 @@ kable(coeffs_table_test,
       align=rep('c', 6))
 ```
 
-And the delta AIC one:
-
 ```{r echo=FALSE, warning=FALSE}
 kable(aic_table_test,  
-      caption="\\label{tab:table4}AIC difference of the Geometric test model",
+      caption="\\label{tab:table4}$\\Delta AIC$ for Geometric test model",
       col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
       align=rep('c', 6))
 ```
 
-As we can see, in this delta AIC table we can see that the preferred and selected method is the 
-geometric one. So in this case, the test is passed.
+
+As we can see, in this delta AIC table, the preferred and selected method is the geometric one. So in this case, the test is passed.
 
 
 ## Zeta test
 
-Now we are going to apply the test methodology with theoretical zeta distributions.
 
-For the case of the coefficients table we get the results below:
+Now we proceed to test with data sets consisting of Zeta distributions.
+
+
 ```{r echo=FALSE, warning=FALSE}
 
 zeta_source = read.table("./list_zeta.txt", header = TRUE, as.is = c("language","file")) # For testing 
@@ -369,46 +374,47 @@ kable(coeffs_table_test,
       align=rep('c', 6))
 ```
 
-And for the delta AIC:
+
 ```{r echo=FALSE, warning=FALSE}
 kable(aic_table_test,  
-      caption="\\label{tab:table6} AIC difference of the Zeta test model",
+      caption="\\label{tab:table6} $\\Delta AIC$ for the Zeta test model",
       col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
       align=rep('c', 6))
 ```
 
-In this case, we can see that it is always selecting the Right-truncated zeta.
 
-# Delta AIC of our models
-Having obtained the parameters and checked our methods, we can now proceed to obtain the -2 log Likelihood 
-for each method and compute the AIC for the real cases.
+Again, it appears that our methods and implementation are correct as the appropriate Zeta distributions were chosen.
 
-Once computed, we can produce the delta table by substracting the best AIC of each Language
-from the other methods' AIC. The resulting table is the following:
+
+## Delta AIC of our models
+
+
+Having obtained the parameters and checked our methods, we can now proceed to obtain the -2 log Likelihood for each model and compute the AIC for the real cases. Once computed, we can produce the delta AIC table by substracting the best AIC of each Language from the other methods' AIC. The resulting table is the following:
+
+
 ```{r echo=FALSE, warning=FALSE}
 kable(aic_table,  
-      caption="\\label{tab:table7}  AIC difference of our different languages' models",
+      caption="\\label{tab:table7}  $\\Delta AIC$ for various models",
       col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta"),
       align=rep('c', 6))
 ```
 
-We can see that, in the case of the out-degree  sequence, the method what works best is
-the right-truncated zeta one.
+
+We can see that, in the case of the out-degree sequence, the method that fits best is almost exclusevily the Right-Truncated Zeta.
 
 
-# Discussion
+## Plots of real data vs best-fit distribution
 
-To verify this model selection, we are now going to check how the real data aligns with the distribution itself. 
 
-To do so, we are going to work with three very distinct languages: 
+To visually verify this model selection, we are now going to check how the real data aligns with the distribution itself. To do so, we are going to work with three very distinct languages: 
 
 - __English__, which uses many Greek and Latin roots.
 - __Chinese__, whose procedence is totally unrelated with no roots to Greek and Latin whatsoever.
 - __Basque__, whose procedence is unknown and is also unrelated to Greek and Latin.
 
-## English comparison with RT Zeta.
+The blue dots are the actual data and the green line is the distribution (RT-Zeta in this case).
 
-```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "RT Zeta Distribution Comparison with English"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -424,14 +430,11 @@ zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
-As we can see, the Right truncated  Zeta distribution fits well with the data's observations
-for the coefficient of gamma obtained in the case of English.
+
+As we can see, the Right truncated  Zeta distribution fits well with the data's observations for the coefficient of gamma obtained in the case of English.
 
 
-
-## Chinese comparison with RT Zeta.
-
-```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "RT Zeta Distribution Comparison with Chinese"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -447,13 +450,11 @@ zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
-As we can see, the Right truncated  Zeta distribution fits well with the data's observations
-for the coefficient of gamma obtained in the case of Chinese as well.
+
+As we can see, the Right truncated Zeta distribution fits well with the data's observations for the coefficient of gamma obtained in the case of Chinese as well.
 
 
-## Basque comparison with RT Zeta.
-
-```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "RT Zeta Distribution Comparison with Basque"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -469,12 +470,11 @@ zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
-As we can see, the Right truncated  Zeta distribution does not fit as well as with the other
-2 languages, but still takes into account the tail on the far right.
 
-This is probably due to the dot on the far left, top corner, that changes the slope slightly.
+As we can see, the Right-Truncated Zeta distribution fits quite well, although not perfectly, with the three languages. Below, we plot the Basque language against the Geometric distribution, in order to show how poor of a fit it is. 
 
-```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "Geometric Distribution Comparison with English"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -489,7 +489,12 @@ geom_plot(seq, coeff, lang)
 
 ```
 
-Next, we add the Altmann function to our set of distributions, to see if it will provide a better fit of our data. 
+
+# Results (With Altmann)
+
+
+Next, we add the Altmann function to our set of distributions, to see if it will provide a better fit of our data. The two added parameters, $\gamma 3$ and $\delta$ are for the Altman funcion. 
+
 
 ```{r echo=FALSE, warning=FALSE}
 source("lab2_altmann.r")
@@ -497,24 +502,24 @@ aic_c_table_alt <- compute_coeffs_table_alt(summary_table, out_source)
 coeffs_table_alt <- as.data.table(aic_c_table_alt[1])
 aic_table_alt <-  as.data.table(aic_c_table_alt[2])
 
-kable(aic_table_alt,  
-      caption="\\label{tab:table8}  AIC difference of our different languages' models",
-      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta", "Altmann"),
-      align=rep('c', 7))
-
+kable(coeffs_table_alt,  
+      caption="\\label{tab:table9} Summary of the most likely parameters",
+      col.names = c("Test Data", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$", "$\\gamma3$", "$\\delta$"),
+      align=rep('c', 8))
 ```
+
 
 ```{r echo=FALSE, warning=FALSE}
-kable(coeffs_table_alt,  
-      caption="\\label{tab:table9} Summary of the most likely parameters for Zeta test sequence",
-      col.names = c("Test Data", "$\\lambda$", "q", "$\\gamma$", "$\\gamma_{2}$", "$k_{max}$", "$\\gamma$", "$\\delta$"),
-      align=rep('c', 8))
-
+kable(aic_table_alt,  
+      caption="\\label{tab:table8} $\\Delta AIC$ for various models",
+      col.names = c("Test Data", "Poisson", "Geometric", "Zeta", "Zeta($\\gamma$=2)", "RT Zeta", "Altmann"),
+      align=rep('c', 7))
 ```
 
+We can see that the Altmann function is now chosen as the best model for our data. Finally, to visually confirm these, we plot the Altmann function against the English language, using the same type of plot as before. 
 
-# English comparison with Altmann
-```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
+
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center" , fig.cap = "Altmann Distribution Comparison with English"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
@@ -531,4 +536,11 @@ altmann_plot(seq, a_gamma, a_delta, lang)
 ```
 
 
+# Discussion
+
+
 # Methods
+
+
+
+
