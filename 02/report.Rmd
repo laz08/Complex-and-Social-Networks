@@ -271,7 +271,7 @@ Next, we will look at a few bar plots for the English langauge to get a visual i
 ```
 
 
-# Results
+# Preliminary Results (No Altmann)
 Having computed the basic metrics, we now proceed to compute the most likely parameters for the various distributions. To do this, we are trying to find the parameters that minimize the minus log-likelihood function. To help expedite the process, we begin with default parameters, which act as our best initial guess. These consist of the following:
 
 - $\lambda_{0}$ = M/N
@@ -513,7 +513,7 @@ kable(coeffs_table_alt,
 ```
 
 
-## English comparison with Altmann
+# English comparison with Altmann
 ```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
