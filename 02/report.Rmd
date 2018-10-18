@@ -326,8 +326,8 @@ aic_c_table_test <- compute_coeffs_table(test_table)
 coeffs_table_test <- as.data.table(aic_c_table_test[1])
 aic_table_test <- as.data.table(aic_c_table_test[2])
 
-names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
-names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta", "Zeta gamma 2", "RT Zeta")
+#names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+#names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta", "Zeta gamma 2", "RT Zeta")
 
 
 kable(coeffs_table_test, 
@@ -365,8 +365,8 @@ coeffs_table_test <- as.data.table(aic_c_table_test[1])
 aic_table_test <- as.data.table(aic_c_table_test[2])
 
 
-names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
-names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
+#names(coeffs_table_test) <- c("Test", "Lambda", "q", "gamma 1", "gamma 2", "k_max")
+#names(aic_table_test) <- c("Test", "Poisson", "Geometric", "Zeta Gamma 2", "Zeta", "RT Zeta")
 
 kable(coeffs_table_test,  
       caption="\\label{tab:table5} Summary of the most likely parameters for Zeta test sequence",
@@ -542,7 +542,7 @@ Table 1 displays some useful metrics of the out-degree distributios of 10 differ
 
 Figures 2 and 3 give a visual representation of the English language out-degree distribution. Figure one really shows that the node degree is concentrated around the smallers numbers, with a very long tail. This long tail makes sense, when we see that the maximum degree of English is over 7,000 and the average degree is 11. 
 
-Table 2 shows the best fit parameters we found from minimizing the minus log-likelihood. By comparing Tables 1 and 2, we can see that theses parameters are quite close to our initial guess. In the English language for example, our initial guess for the parameters were $\lambda$ = 11.25, q = 0.088, $\gamma$ = 2 and kmax = 17,775 and the best fit parameters were $\lambda$ = 11.254, q = 0.089, $\lamda$ = 1.545, and kmax = 17,775. 
+Table 2 shows the best fit parameters we found from minimizing the minus log-likelihood. By comparing Tables 1 and 2, we can see that theses parameters are quite close to our initial guess. In the English language for example, our initial guess for the parameters were $\lambda = 11.25$, $q = 0.088$, $\gamma = 2$ and $kmax = 17,775$ and the best fit parameters were $\lambda = 11.254$, $q = 0.089$, $\lambda = 1.545$, and $kmax = 17,775$. 
 
 Tables 3 and 4 are the results of our Geometric test. Table 3 displays the best fit parameters of 5 data sets consting of geometric distributions with a varying q parameter. We can see that the q parameters our methods chose, were nearly identical to the actual parameters. Table 4 shows delta AIC for the same data sets. We can see that the geometric distribution was chosen correctly for each. 
 
