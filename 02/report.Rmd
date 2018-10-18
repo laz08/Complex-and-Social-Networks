@@ -523,7 +523,7 @@ We can see that the Altmann function is now chosen as the best model for our dat
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
 
-lang_idx = 2    # Selects the language from the tables (which row).
+lang_idx = 6    # Selects the language from the tables (which row).
 
 lang = out_source[lang_idx, 1]
 file = out_source[lang_idx, 2]
@@ -535,6 +535,21 @@ altmann_plot(seq, a_gamma, a_delta, lang)
 
 ```
 
+```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center" , fig.cap = "Altmann Distribution Comparison with Basques"}
+#  c(6, 4, 2)  Ordered: English, Chinese, Basque
+
+
+lang_idx = 2    # Selects the language from the tables (which row).
+
+lang = out_source[lang_idx, 1]
+file = out_source[lang_idx, 2]
+seq = read.table(file, header = FALSE)
+a_gamma = coeffs_table_alt[lang_idx, 7]
+a_delta = coeffs_table_alt[lang_idx, 8]
+
+altmann_plot(seq, a_gamma, a_delta, lang)
+
+```
 
 # Discussion
 
@@ -550,10 +565,15 @@ Tables 5 and 6 are the results of our Zeta distribution test. Table 5 displays t
 
 Table 7 is the delta AIC table for the out-degree sequence of the 10 languages. We can see that RT Zeta was chosen in all cases except for Turkish. The Zeta distribution came in a very close second for Arabic and Basque. It's also worth noting that, based on the large values present in this table, Poisson and Geometric distributions should not be used to model out-degree distributions (At least with the langauges studied here). Looking at the large values for most of the languages in the Zeta model with $\gamma = 2$, we can see that the parameter selection is extermely important. 
 
-Figures 3, 4, and 5 ... to be continued
+Figures 3, 4, and 5 provide a visual comparison of the RT Zeta distribution (green line) to the actual out-degree data (blue dots) of the English, Chinese, and Basque languages, respectively. We can see that the fit is quite good in all cases, but particulary good for the Basque language. Please note that the y-axis was limited to minimum probability in the actual data. These three plots allow us to visually confirm that the distribution of each network differs slightly, as is the case with many real-world networks, meaning it a best fit distribution for one network isn't necessarily best for all networks. Additionally, we can see that the tails of the three languages differs, with the Chinese and English having slightly longer tails than Basque. 
+
+Figure 6 compares the English out-degree network to a geometric distribution. We did this to show just how poor of a fit it provides and to emphasize the importance of determing the correct (or best fit) distribution of the network. 
+
+Tables 8 and 9 are the coefficient and delta AIC tables with the Altmann function included. $\gamma 3$ and $\delta$ are the new parameters for the Altmann fnction. Looking at table 9, we can see that the Altman function was chosen as the best fit for every language. It's worth noting that Zeta was a fairly close second for both Turkish and Basque, but not the other languages. Figures 7 and 8 are another visual comparison of the Altmann function (green line) with the English and Basque. Comparing with figures 3 and 5, we can see that the Altmann function provides a slightly better fit. 
 
 # Methods
 
+TODO
 
 
 
