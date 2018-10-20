@@ -2,7 +2,7 @@
 title: "CSN - Second Lab"
 author: "Kymry Burwell, Laura Cebollero"
 geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
-date: "October 7th, 2018"
+date: "October 22nd, 2018"
 output: pdf_document
 ---
 
@@ -293,7 +293,7 @@ aic_table <- as.data.table(aic_c_table[2])
 
 ```
 
-
+\newpage 
 ```{r echo=FALSE, warning=FALSE}
 kable(coeffs_table, 
       caption="\\label{tab:table2} Summary of the most likely parameters",
@@ -400,7 +400,8 @@ kable(aic_table,
 ```
 
 
-We can see that, in the case of the out-degree sequence, the method that fits best is almost exclusevily the Right-Truncated Zeta.
+We can see that, in the case of the out-degree sequence, the method that fits best is almost exclusevily the Right-Truncated Zeta, except for the Turkish language, which seems to fit better 
+a Zeta distribution.
 
 
 ## Plots of real data vs best-fit distribution
@@ -453,6 +454,7 @@ zeta_plot(seq, maxdegree, coeff, lang)
 
 As we can see, the Right truncated Zeta distribution fits well with the data's observations for the coefficient of gamma obtained in the case of Chinese as well.
 
+\newpage
 
 ```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "RT Zeta Distribution Comparison with Basque"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
@@ -470,8 +472,12 @@ zeta_plot(seq, maxdegree, coeff, lang)
 
 ```
 
+It also seems to fit the Basque language.
 
-As we can see, the Right-Truncated Zeta distribution fits quite well, although not perfectly, with the three languages. Below, we plot the Basque language against the Geometric distribution, in order to show how poor of a fit it is. 
+So, as we can see, the Right-Truncated Zeta distribution fits quite well, although not perfectly, with the three languages. 
+
+Below, we plot the Basque language against the Geometric distribution, in order to exemplify 
+a bad case and to show how poor of a fit it is:
 
 
 ```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center", fig.cap = "Geometric Distribution Comparison with English"}
@@ -489,7 +495,11 @@ geom_plot(seq, coeff, lang)
 
 ```
 
+Clearly, the data does not fit the geometric distribution.
 
+
+
+\newpage
 # Results (With Altmann)
 
 
@@ -535,6 +545,8 @@ altmann_plot(seq, a_gamma, a_delta, lang)
 
 ```
 
+\newpage 
+We can also plot it with the Basque language:
 ```{r  warning=FALSE, echo=FALSE, out.width="300px", out.height="300px", fig.align="center" , fig.cap = "Altmann Distribution Comparison with Basques"}
 #  c(6, 4, 2)  Ordered: English, Chinese, Basque
 
@@ -550,7 +562,10 @@ a_delta = coeffs_table_alt[lang_idx, 8]
 altmann_plot(seq, a_gamma, a_delta, lang)
 
 ```
+Again, we can see that it fits well the data.
 
+
+\newpage
 # Discussion
 
 Table 1 displays some useful metrics of the out-degree distributios of 10 different languages. A few items stand out: Czech has a maximum degree that nearly doubles every other language, Greek and Basque have far fewer nodes than the rest, and the average degree of English is quite high relative to the other languages. This table gives us some good insight into how the lanugages differ form a high level perspective.
@@ -571,9 +586,17 @@ Figure 6 compares the English out-degree network to a geometric distribution. We
 
 Tables 8 and 9 are the coefficient and delta AIC tables with the Altmann function included. $\gamma 3$ and $\delta$ are the new parameters for the Altmann fnction. Looking at table 9, we can see that the Altman function was chosen as the best fit for every language. It's worth noting that Zeta was a fairly close second for both Turkish and Basque, but not the other languages. Figures 7 and 8 are another visual comparison of the Altmann function (green line) with the English and Basque. Comparing with figures 3 and 5, we can see that the Altmann function provides a slightly better fit. 
 
+\newpage
 # Methods
 
-TODO
+Our work included, among other things:
 
+- Computing basic metrics as well as C, for example, in order to use it aftwerwards.
 
+- Compute the log likelihood of choosing a method minimising each distribution function with the `mle` function.
 
+- On the same line, we used the suggested `L-BFGS-B` method as the solver of the `mle` function. This method gave us lots of trouble for if there was a slight error on the passed function to the method, it would complain about trying to solve a singular system, which was not possible.
+
+- To compute the log likelihood of the Altmann function, we had to apply a logarithmic scale to the whole function. Otherwise, the `mle` method could not solve it due to the reason explained in the previous point.
+
+- Graphics were used to check visually the how the data fitted the theoretical distributions.
