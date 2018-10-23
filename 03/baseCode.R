@@ -20,36 +20,7 @@ if(grepl("nora", wd)) {
 }
 rm(wd)
 
-
-## Read file
-
-degree_sequence = read.table("./Basque_syntactic_dependency_network.txt",
-                             header = FALSE,
-                             stringsAsFactors = FALSE)
-
-(N = as.numeric(degree_sequence[1, 1]))
-(E = as.numeric((degree_sequence[1, 2])))
-
-degree_sequence = degree_sequence[-1, ]
-graph = graph.data.frame(degree_sequence)
-
-
-# Remove loops
-# 
-is_simple(graph)
-g2 = simplify(graph, remove.multiple = TRUE, remove.loops = TRUE)
-is_simple(g2)
-
-
-## 
-## Summary table
-
-write_summary <- function(language, file, ) {
-    
-  
-    l <- list()
-    return(l)
-}
+#####
 
 source = read.table("language_lists.txt", header = FALSE, stringsAsFactors = FALSE)
 
@@ -81,4 +52,4 @@ for (x in 1:length(languages)){
 
     table_1 <- rbind(table_1, list(language, N, E, k, delta))
 }
-
+View(table_1)
