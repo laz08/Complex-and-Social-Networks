@@ -1,5 +1,5 @@
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "data.table")
+requiredPackages <- c("igraph", "ggplot2", "data.table", "knitr")
 
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
@@ -52,4 +52,4 @@ for (x in 1:length(languages)){
 
     table_1 <- rbind(table_1, list(language, N, E, k, delta))
 }
-View(table_1)
+table_1
