@@ -1,0 +1,78 @@
+---
+title: "CSN - Third Lab"
+author: "Kymry Burwell, Laura Cebollero"
+geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
+date: "November, 2018"
+output: pdf_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'h')
+```
+
+```{r setup, include=FALSE, echo=FALSE}
+wd = getwd()
+if(grepl("nora", wd)) {
+    setwd("~/git/csn-labs/03")
+} else {
+    setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/03")
+}
+rm(wd)
+
+source("baseCode.R")
+```
+
+# Introduction
+
+On this lab we are asked to verify the possible significance of network metrics applied
+to global syntactic dependency trees, generated from large samples of 10 different languages.
+
+The possible metrics are:
+
+- *Clustering Coefficient* $C$ defined by Watss-Strogatz ($C_{WS}$)
+- *Closeness Centrality* $\mathcal{C}$
+
+We have chosen to work with the metric of  *Closeness Centrality* $\mathcal{C}$ and check if this metric
+is significantly large when comparing the real model to other two generated randomly.
+
+## Methodology
+
+Our null model $H_{0}$ is each syntactic tree without chaning anything.
+
+We are going to compare this model to two others:
+
+- A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be
+the same as those on the real network.
+- A randomized graph generated using the switching method.
+
+When comparing each model to the original one, we are going to work with a "traditional" confidence interval of 0.95, so we are going to:
+
+- Reject the model if the p-value is outside of our confidence interval, thus $$p-value > 0.05$$
+- Accept the model if the p-value is inside the confidence interval, thus $$p-value \le 0.05$$
+
+This p-value is going to be computed using the Monte-Carlo method explained during theory class.
+
+
+## Data preparation
+First of all, since we want to work with syntactic dependency trees, we should remove loops and
+multiedges (graph's properties not present in well-defined trees structures).
+
+Once removed, we can now proceed onto computing a summary table with:
+
+- Language.
+- N: The number of vertices.
+- E: Number of edges.
+- <k>: The mean degree.
+- $\delta$: Network density of edges.
+
+```{r echo=FALSE}
+kable(table_1)
+```
+
+## Switching method questions
+*Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
+
+- **preserve the degree sequence?** 
+
+- **preserve the degree sequence but produce edges that are not allowed (loops, multiedges)?**
+(switchings not satisfying this property are not valid; performing them is a waste of time but they have to be counted to determine when QE switches, successful or not, have been reached)
