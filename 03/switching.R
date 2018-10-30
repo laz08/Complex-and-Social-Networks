@@ -51,7 +51,7 @@ success_ctr = 0
 fail_ctr = 0
 
 edgelist = as_edgelist(graph_simple)
-
+adj_edgelist = as_adj_edge_list(graph_simple)
 Q = log10(E)
 E = nrow(edgelist)
 
@@ -69,7 +69,7 @@ for(i in seq(0, floor(E*Q))){
     s_t_original = s_t
     # Switching
     #  Check they are not the same vertices + check for multiedges + check for loops
-    if(u_v[1] != s_t[1] && u_v[1] != s_t[2] && !are_adjacent(g_tmp,  s_t[1], u_v[2]) && !are_adjacent(g_tmp, u_v[2], s_t[1])) {
+    if(u_v[1] != s_t[1] && u_v[2] != s_t[2] && !are_adjacent(g_tmp,  s_t[1], u_v[2]) && !are_adjacent(g_tmp, u_v[2], s_t[1])) {
         temp = u_v[2] 
         u_v[2] = s_t[2]
         s_t[2] = temp
@@ -104,7 +104,7 @@ is_simple(new_graph)
 x_vec = closeness(graph_simple) # Closeness of basque language tree
 x = sum(x_vec)/N
 
-x_vec2 = closeness(new_graph) # Closeness of basque language tree
+x_vec2 = closeness(new_graph) # Closeness of switching model
 x2 = sum(x_vec2)/N
 
 x
