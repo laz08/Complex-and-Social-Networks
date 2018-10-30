@@ -31,7 +31,6 @@ degree_sequence = read.table("./Basque_syntactic_dependency_network.txt",
                              stringsAsFactors = FALSE)
 
 N = as.numeric(degree_sequence[1, 1])
-E = as.numeric((degree_sequence[1, 2]))
 
 degree_sequence = degree_sequence[-1, ]
 graph = graph.data.frame(degree_sequence)
@@ -43,19 +42,25 @@ graph_simple = simplify(graph, remove.multiple = TRUE, remove.loops = TRUE)
 is_simple(graph_simple)
 
 
+    
 # TODO: Migrate this to a table for table 2 results
 # Switching method
-Q = log(E)
+
 
 success_ctr = 0
 fail_ctr = 0
 
 edgelist = as_edgelist(graph_simple)
+
+Q = log10(E)
+E = nrow(edgelist)
+
 g_tmp = graph_simple
-for(i in seq(0, E*Q)){
+
+for(i in seq(0, floor(E*Q))){
     
-    u_v_id = floor(runif(1) * E / 100) 
-    s_t_id = floor(runif(1) * E / 100)
+    u_v_id = floor(runif(1) * E) + 1
+    s_t_id = floor(runif(1) * E) + 1
     
     u_v = edgelist[u_v_id, ]
     s_t = edgelist[s_t_id, ]
@@ -74,13 +79,20 @@ for(i in seq(0, E*Q)){
         edgelist[s_t_id, ] = s_t 
         
         # Modifying the original graph
-        g_tmp = delete_edges(g_tmp, c(edge(u_v_original[1], u_v_original[2]), edge(s_t_original[1], s_t_original[2])))
+        # are_adjacent(g_tmp, u_v_original[1], u_v_original[2])
+        # are_adjacent(g_tmp, s_t_original[1], s_t_original[2])
+        e1 = paste(u_v_original[1], "|", u_v_original[2], sep="")
+        e2 = paste(s_t_original[1], "|", s_t_original[2], sep="")
+        
+        g_tmp = delete_edges(g_tmp, c(e1, e2))
         g_tmp = add_edges(g_tmp, c(u_v, s_t))
         
         success_ctr = success_ctr + 1
     } else {
         fail_ctr = fail_ctr + 1
     }
+    
+    cat("Iteration: ", i, "\n")
 }
 
 fail_ctr
