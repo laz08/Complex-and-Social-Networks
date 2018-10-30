@@ -47,13 +47,38 @@ is_simple(graph_simple)
 # Switching method
 
 
+check_adjacency <- function(v1, v2, names, m) {
+    
+    s_midx = which(v1, names)
+    t_midx = which(v2, names)
+    if(m[s_midx, t_midx] == 1 || m[t_midx, s_midx] == 1){
+        return(TRUE)       
+    }
+    return(FALSE)
+}
+
+
+
+change_adjacency <- function(v1, v2, names, m, value) {
+    
+    s_midx = which(v1, names)
+    t_midx = which(v2, names)
+    m[s_midx, t_midx] = value
+    m[t_midx, s_midx] = value
+    
+    return(m)
+}
+
 success_ctr = 0
 fail_ctr = 0
 
 edgelist = as_edgelist(graph_simple)
-
+#edgel = as_adj_edge_list(graph_simple)
 Q = log10(E)
 E = nrow(edgelist)
+
+m = as_adjacency_matrix(graph_simple)
+names = colnames(m)
 
 g_tmp = graph_simple
 
@@ -67,9 +92,13 @@ for(i in seq(0, floor(E*Q))){
     
     u_v_original = u_v
     s_t_original = s_t
+    
+    
+    
     # Switching
     #  Check they are not the same vertices + check for multiedges + check for loops
-    if(u_v[1] != s_t[1] && u_v[2] != s_t[2] && !are_adjacent(g_tmp,  s_t[1], u_v[2]) && !are_adjacent(g_tmp, u_v[2], s_t[1])) {
+    #if(u_v[1] != s_t[1] && u_v[2] != s_t[2] && !are_adjacent(g_tmp,  s_t[1], u_v[2]) && !are_adjacent(g_tmp, u_v[2], s_t[1])) {
+    if(u_v[1] != s_t[1] && u_v[2] != s_t[2] && !check_adjacency(s_t[1], u_v[2], names, m) && !check_adjacency(u_v[2], s_t[1], names, m)) {
         temp = u_v[2] 
         u_v[2] = s_t[2]
         s_t[2] = temp
@@ -81,11 +110,17 @@ for(i in seq(0, floor(E*Q))){
         # Modifying the original graph
         # are_adjacent(g_tmp, u_v_original[1], u_v_original[2])
         # are_adjacent(g_tmp, s_t_original[1], s_t_original[2])
-        e1 = paste(u_v_original[1], "|", u_v_original[2], sep="")
-        e2 = paste(s_t_original[1], "|", s_t_original[2], sep="")
+        #e1 = paste(u_v_original[1], "|", u_v_original[2], sep="")
+        #e2 = paste(s_t_original[1], "|", s_t_original[2], sep="")
         
-        g_tmp = delete_edges(g_tmp, c(e1, e2))
-        g_tmp = add_edges(g_tmp, c(u_v, s_t))
+        
+        # Delete adjacencies
+        m = change_adjacency(u_v_original[1], u_v_original[2], names, m, 0)
+        m = change_adjacency(s_t_original[1], s_t_original[2], names, m, 0)
+        
+        # Add new adjacencies
+        m = change_adjacency(u_v[1], u_v[2], names, m, 1)
+        m = change_adjacency(s_t[1], s_t[2], names, m, 1)
         
         success_ctr = success_ctr + 1
     } else {
@@ -118,3 +153,4 @@ m = as_adjacency_matrix(g)
 names = colnames(m)
 
 match("Sec", names)
+as.data.frame(get.adjedgelist(g))
