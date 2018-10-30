@@ -49,8 +49,8 @@ is_simple(graph_simple)
 
 check_adjacency <- function(v1, v2, names, m) {
     
-    s_midx = which(v1, names)
-    t_midx = which(v2, names)
+    s_midx = match(v1, names)
+    t_midx = match(v2, names)
     if(m[s_midx, t_midx] == 1 || m[t_midx, s_midx] == 1){
         return(TRUE)       
     }
@@ -61,8 +61,8 @@ check_adjacency <- function(v1, v2, names, m) {
 
 change_adjacency <- function(v1, v2, names, m, value) {
     
-    s_midx = which(v1, names)
-    t_midx = which(v2, names)
+    s_midx = match(v1, names)
+    t_midx = match(v2, names)
     m[s_midx, t_midx] = value
     m[t_midx, s_midx] = value
     
