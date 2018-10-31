@@ -33,7 +33,8 @@ degree_sequence = read.table("./Basque_syntactic_dependency_network.txt",
 N = as.numeric(degree_sequence[1, 1])
 
 degree_sequence = degree_sequence[-1, ]
-graph = graph.data.frame(degree_sequence)
+graph = graph_from_edgelist(as.matrix( degree_sequence))
+#graph = graph.data.frame(degree_sequence)
 
 
 # Remove loops
@@ -101,20 +102,9 @@ success_ctr
 new_graph = graph_from_edgelist(edgelist)
 is_simple(new_graph)
 
-x_vec = closeness(graph_simple) # Closeness of basque language tree
-x = sum(x_vec)/N
+x_vec = closeness(graph_simple, mode = "out", normalized = TRUE) # Closeness of basque language tree
+mean(x_vec)
+
 
 x_vec2 = closeness(new_graph) # Closeness of switching model
 x2 = sum(x_vec2)/N
-
-x
-x2
-
-
-g = make_ring(5)
-g = set_vertex_attr(g, "name", value = c("First", "Sec", "Thrd", "Frth", "Fifth"))
-m = as_adjacency_matrix(g)
-
-names = colnames(m)
-
-match("Sec", names)
