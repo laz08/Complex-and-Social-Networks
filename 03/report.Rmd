@@ -100,6 +100,13 @@ Having said that, **using the iGraph graph structure on its own proved to be ver
 
 On our first attempt, **we tried using an adjacency edge list for each node**, since we know that it is very efficient time-wise when accessing the list of edges related to a node. However, **the computation of such structure for each new model took 5 or more minutes**, without taking into account the switching model computation. This was an **overhead that was not feasible for us, for we had to compute log(E) times E models for each language.** Thus, we opted on using an adjacency matrix, which could be computed within a couple of seconds and accessing it randomly was also immediate, although it was more hungry memory-wise.
 
-Opting to use this method for the switching method resulted in not being able to compute the metrics for some languages.
+Opting to use this method for the switching method resulted in not being able to compute the metrics for those languages with a very big numbre of vertices. Namely, Chinese was impossible for us, for it had over 40k nodes, which would need a matrix of $40.000 \dot 40.000$.
+
+Although Catalan has a very close number of nodes but our computer resources allow having a matrix of $36.000 * 36.000$.
+
+So only two languages have been left out on our computations due to lack of memory on our machines:
+
+- Chinese, with over 40.000 nodes.
+- Czech, with over 69.000 nodes.
 
 

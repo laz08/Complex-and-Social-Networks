@@ -25,9 +25,11 @@ rm(wd)
 set.seed(42)
 
 ## Read file
-degree_sequence = read.table("./Basque_syntactic_dependency_network.txt",
+degree_sequence = read.table("./Arabic_syntactic_dependency_network.txt",
                              header = FALSE,
-                             stringsAsFactors = FALSE)
+                             stringsAsFactors = FALSE, 
+                             sep = " ",
+                             quote="")
 
 N = as.numeric(degree_sequence[1, 1])
 
