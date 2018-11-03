@@ -28,7 +28,7 @@ languages = c("Arabic", "Basque", "Catalan", "Chinese", "Czech", "English", "Gre
 table_1 <- data.table("Language" = character(),
                       "N" = numeric(),
                       "E" = numeric(),
-                      "<k>" = numeric(),
+                      "k" = numeric(),
                       "delta" = numeric(),
                       stringsAsFactors = FALSE)
 

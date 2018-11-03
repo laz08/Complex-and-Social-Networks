@@ -27,25 +27,25 @@ source("baseCode.R")
 On this lab we are asked to verify the possible significance of network metrics applied
 to global syntactic dependency trees, generated from large samples of 10 different languages.
 
-The possible metrics are:
+The possible metrics to study are:
 
 - *Clustering Coefficient* $C$ defined by Watss-Strogatz ($C_{WS}$)
 - *Closeness Centrality* $\mathcal{C}$
 
 We have chosen to work with the metric of  *Closeness Centrality* $\mathcal{C}$ and check if this metric
-is significantly large when comparing the real model to other two generated randomly.
+is significantly large when comparing the real model to other two generated randomly using two different methods: the Erdős-Rényi and the Switching ones.
 
 ## Methodology
 
-Our null model $H_{0}$ is each syntactic tree without chaning anything.
+Our null model $H_{0}$ is each syntactic tree created from a syntatic network example of a language $l$,
+which is a language containted to a total set of $n$ languages: $$L = \{l_{0}, l_{1}, .., l_{n}\}$$
 
-We are going to compare this model to two others:
+We are going to compare, for each language,  its *original* model to two others:
 
-- A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be
-the same as those on the real network.
+- A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be the same as those on the real network.
 - A randomized graph generated using the switching method.
 
-When comparing each model to the original one, we are going to work with a "traditional" confidence interval of 0.95, so we are going to:
+When comparing each model to the original one, we are going to work with a *traditional* **confidence interval of 0.95**, so we are going to:
 
 - Reject the model if the p-value is outside of our confidence interval, thus $$p-value > 0.05$$
 - Accept the model if the p-value is inside the confidence interval, thus $$p-value \le 0.05$$
@@ -62,17 +62,44 @@ Once removed, we can now proceed onto computing a summary table with:
 - Language.
 - N: The number of vertices.
 - E: Number of edges.
-- <k>: The mean degree.
+- $<k>$: The mean degree.
 - $\delta$: Network density of edges.
 
-```{r echo=FALSE}
+```{r echo=FALSE, cache=TRUE}
 kable(table_1)
 ```
 
+We want to note that since the dependency network provided to us has been structured
+as an adjacency list, those nodes that are not connected will not appear in the adjacency list.
+
+Thus, we have to take them into account when creating the graph structures.
+
 ## Switching method questions
-*Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
+**Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
 
 - **preserve the degree sequence?** 
-
+TODO: Graphviz to exemplify the cases
 - **preserve the degree sequence but produce edges that are not allowed (loops, multiedges)?**
-(switchings not satisfying this property are not valid; performing them is a waste of time but they have to be counted to determine when QE switches, successful or not, have been reached)
+TODO: Graphviz to exemplify the cases
+
+
+## Implementation Summary
+
+In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
+
+- ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1.
+- ``binomial.R`` contains the implementation of the Erdos-Renyi model.
+- ``switching.R`` contains the implementation of the switching model.
+- ``modelsComparisons.R`` which contains the implementation of the comparison of the two random models respect to the original structure.
+
+As you can see, we have sticked on using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
+
+Most importantly, **the computation of the closeness for each vertex is way faster on R than our tests on computing it with ``C++`` with large networks.** So, although it seemed strange to us that this complex computation is almost instant in R, we start assuming its correctness and a very efficient implementation thanks to using the iGraph own structure for graphs.
+
+Having said that, **using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the directed edges.
+
+On our first attempt, **we tried using an adjacency edge list for each node**, since we know that it is very efficient time-wise when accessing the list of edges related to a node. However, **the computation of such structure for each new model took 5 or more minutes**, without taking into account the switching model computation. This was an **overhead that was not feasible for us, for we had to compute log(E) times E models for each language.** Thus, we opted on using an adjacency matrix, which could be computed within a couple of seconds and accessing it randomly was also immediate, although it was more hungry memory-wise.
+
+Opting to use this method for the switching method resulted in not being able to compute the metrics for some languages.
+
+

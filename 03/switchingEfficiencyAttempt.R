@@ -1,5 +1,5 @@
 # Load and install necessary packages
-requiredPackages <- c("igraph", "ggplot2", "data.table", "knitr", "Rcpp")
+requiredPackages <- c("igraph", "ggplot2", "data.table", "knitr", "Rcpp", "Matrix")
 for (pac in requiredPackages) {
     if(!require(pac,  character.only=TRUE)){
         install.packages(pac, repos="http://cran.rstudio.com")
@@ -58,6 +58,7 @@ zero_deg_v = N-length(V(graph_simple))
 # Create adjacency matrix (igraph and rstyle)
 m = as_adjacency_matrix(graph_simple, names = FALSE)
 rstyle_m <- as.matrix(m)
+#rstyle_m = Matrix(m, sparse=TRUE)
 
 # Calculating all potential switches simultaneously (faster than using runif multiple times)
 u_v_id = sample(1:E, Q*E, replace = TRUE)
