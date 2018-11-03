@@ -21,35 +21,44 @@ if(grepl("nora", wd)) {
 rm(wd)
 
 #####
-
-source = read.table("language_lists.txt", header = FALSE, stringsAsFactors = FALSE)
-
-languages = c("Arabic", "Basque", "Catalan", "Chinese", "Czech", "English", "Greek", "Hungarian", "Italian", "Turkish")
-table_1 <- data.table("Language" = character(),
-                      "N" = numeric(),
-                      "E" = numeric(),
-                      "k" = numeric(),
-                      "delta" = numeric(),
-                      stringsAsFactors = FALSE)
-
-for (x in 1:length(languages)){
-    file <- source$V1[x]
-    language <- languages[x]
+computeBasicMetricsTable <- function(){
+    source = read.table("language_lists.txt", header = FALSE, stringsAsFactors = FALSE)
     
-    degree_sequence = read.table(file,
-                                 header = FALSE,
-                                 stringsAsFactors = FALSE,
-                                 sep = " ",
-                                 quote="")
+    languages = c("Arabic", "Basque", "Catalan", "Chinese", "Czech", "English", "Greek", "Hungarian", "Italian", "Turkish")
+    table_1 <- data.table("Language" = character(),
+                          "N" = numeric(),
+                          "E" = numeric(),
+                          "k" = numeric(),
+                          "delta" = numeric(),
+                          stringsAsFactors = FALSE)
     
-    tmp_graph = graph.data.frame(degree_sequence[-1, ])
-    tmp_graph = simplify(tmp_graph, remove.multiple = TRUE, remove.loops = TRUE)
-    E = gsize(tmp_graph)
-    
-    N = as.numeric(degree_sequence[1, 1])
-    k = 2*E/N
-    delta = 2*E/(N * (N-1))
-
-    table_1 <- rbind(table_1, list(language, N, E, k, delta))
+    for (x in 1:length(languages)){
+        file <- source$V1[x]
+        language <- languages[x]
+        
+        degree_sequence = read.table(file,
+                                     header = FALSE,
+                                     stringsAsFactors = FALSE,
+                                     sep = " ",
+                                     quote="")
+        
+        tmp_graph = graph.data.frame(degree_sequence[-1, ])
+        tmp_graph = simplify(tmp_graph, remove.multiple = TRUE, remove.loops = TRUE)
+        E = gsize(tmp_graph)
+        
+        N = as.numeric(degree_sequence[1, 1])
+        k = 2*E/N
+        delta = 2*E/(N * (N-1))
+        
+        table_1 <- rbind(table_1, list(language, N, E, k, delta))
+    }
+    return(table_1)
 }
-table_1
+
+
+
+computeGraphCloseness <- function(graph, N) {
+  x_vec = closeness(graph, normalized = TRUE) 
+  x = sum(x_vec)/N
+  return(x)
+}
