@@ -57,8 +57,31 @@ computeBasicMetricsTable <- function(){
 
 
 
-computeGraphCloseness <- function(graph, N) {
+computeGraphClosenessOLD <- function(graph, N) {
   x_vec = closeness(graph, normalized = TRUE) 
   x = sum(x_vec)/N
   return(x)
 }
+
+computeGraphCloseness <- function(graph_simple, N){
+    closeness = 0
+    M = N/80 # Estimate the closeness
+    for (i in seq(1:M)){
+        #cat(i, "\n")
+        temp = distances(graph_simple, i, V(graph_simple), mode = "out", algorithm = "dijkstra" )
+        temp[which(!is.finite(temp))] <- 0
+        temp <- temp[temp >0]
+        temp <- sapply(temp, function(x) 1/x)
+        if(length(temp) > 0){
+            temp <- sum(temp)/(N-1)    
+        } else {
+            temp <- 0
+        }
+        closeness <- closeness + temp
+    }
+    closeness = closeness/(M)
+    
+    return(closeness)
+}
+
+

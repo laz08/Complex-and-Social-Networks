@@ -1,4 +1,5 @@
 
+source("baseMetrics.R")
 
 computeSwitchingCloseness <- function(graph, N) {
   success_ctr = 0
@@ -75,9 +76,8 @@ computeSwitchingCloseness <- function(graph, N) {
   new_graph = graph_from_edgelist(edgelist)
   cat("New graph is simple ",  is_simple(new_graph), "\n")
   
-  # Closeness of basque language tree
-  x_vec = closeness(new_graph, mode = "out", normalized = TRUE) 
-  x = sum(x_vec)/N
+  
+  x = computeGraphCloseness(new_graph, N)
   return(x)
 }
 
