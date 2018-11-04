@@ -4,13 +4,16 @@ computeSwitchingCloseness <- function(graph, N) {
   success_ctr = 0
   fail_ctr = 0
   
+  # Add vertices with no edges
+  zero_deg_v = N-length(V(graph))
+  graph = add_vertices(graph, nv=zero_deg_v)
+  
   # Create edgelist
   edgelist = as_edgelist(graph, names = FALSE)
   is_simple(graph_from_edgelist(edgelist))
   
   E = nrow(edgelist)
   Q = log(E)
-  zero_deg_v = N-length(V(graph))
   
   # Create adjacency matrix (igraph and rstyle)
   m = as_adjacency_matrix(graph, names = FALSE)
@@ -70,9 +73,6 @@ computeSwitchingCloseness <- function(graph, N) {
   
   # Create new graph from edgelist
   new_graph = graph_from_edgelist(edgelist)
-  
-  # Add vertices with no edges
-  new_graph = add_vertices(new_graph, nv=zero_deg_v)
   cat("New graph is simple ",  is_simple(new_graph), "\n")
   
   # Closeness of basque language tree
