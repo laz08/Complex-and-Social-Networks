@@ -5,6 +5,9 @@ set.seed(42)
 
 ## Monte Carlo Algorithm
 computeBinomialPValue <- function(x, N, E, T_it) {
+    
+    results <- c()
+    
     # x is the closeness of the original language
     f_bin = 0
     for(i in seq(1, T_it)){
@@ -18,11 +21,14 @@ computeBinomialPValue <- function(x, N, E, T_it) {
         # M = 10%
         x_nh = computeGraphCloseness(er_graph_simpl, N)
         
-        cat("X_nh: ", x_nh, "x: ", x, "\n")
+        # cat("X_nh: ", x_nh, "x: ", x, "\n")
         if(x_nh >= x){
             f_bin = f_bin + 1
         }
+        
+        results = append(results, x_nh)
     }
+    cat("Results Binomial: ", results, "\n")
     p_xnh_x = f_bin/T_it
     return(p_xnh_x)
 }

@@ -26,12 +26,13 @@ source("baseMetrics.R")
 source("binomial.R")
 source("switching.R")
 #############################
-TESTING = TRUE
+TESTING = FALSE
 options(scipen=999)
 #############################
 
 computeModelsComparisonTable <- function(){
     
+    start_time <- Sys.time()
     source = read.table("language_lists.txt", header = FALSE, stringsAsFactors = FALSE)
     
     languages = c("Arabic", "Basque", "Catalan", "Chinese", "Czech", "English", "Greek", "Hungarian", "Italian", "Turkish")
@@ -72,16 +73,18 @@ computeModelsComparisonTable <- function(){
         metric <- computeGraphCloseness(original_graph, N)
         bin <- computeBinomialPValue(metric, N, E, 20)
         switch <- computeSwitchingPValue(metric, original_graph, N, 20)
-        
         table_2 <- rbind(table_2, list(language, metric, bin, switch))
         
         if(TESTING){
             break
         }
     }
+    
+    end_time <- Sys.time()
+    cat("Elapsed time: ", end_time - start_time, "\n")
     return(table_2)
 }
 
-
 table = computeModelsComparisonTable()
 table
+

@@ -84,15 +84,22 @@ computeSwitchingCloseness <- function(graph, N) {
 
 ## Monte Carlo Algorithm
 computeSwitchingPValue <- function(x, original_graph, N, T_it=20) {
+    cat("X: ", x, "\n")
+    results = c()
     # x is the closeness of the original language
     f_bin = 0
     for(i in seq(1, T_it)){
         x_nh = computeSwitchingCloseness(original_graph, N)
-        cat("X_nh: ", x_nh, "x: ", x, "\n")
+        #cat("X_nh: ", x_nh, "x: ", x, "\n")
         if(x_nh >= x){
             f_bin = f_bin + 1
         }
+        
+        results = append(results, x_nh)
     }
+    
+    cat("Results switching: ", results, "\n")
     p_xnh_x = f_bin/T_it
     return(p_xnh_x)
 }
+

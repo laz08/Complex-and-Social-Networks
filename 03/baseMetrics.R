@@ -65,7 +65,7 @@ computeGraphClosenessOLD <- function(graph, N) {
 
 computeGraphCloseness <- function(graph_simple, N){
     closeness = 0
-    M = N/80 # Estimate the closeness
+    M = N/80 # Estimate the closeness    
     for (i in seq(1:M)){
         #cat(i, "\n")
         temp = distances(graph_simple, i, V(graph_simple), mode = "all", algorithm = "dijkstra" )
