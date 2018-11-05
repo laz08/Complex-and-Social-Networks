@@ -50,25 +50,7 @@ When comparing each model to the original network, we are going to work with a *
 
 This p-value is going to be computed using the Monte-Carlo method explained during theory class.
 
-
-## Data preparation
-First of all, since we want to work with syntactic dependency trees, we should remove loops and
-multiedges (graph's properties not present in well-defined trees structures).
-
-Once removed, we can now proceed onto computing a summary table with:
-
-- Language.
-- N: The number of vertices.
-- E: Number of edges.
-- $<k>$: The mean degree.
-- $\delta$: Network density of edges.
-
-```{r echo=FALSE, cache=TRUE}
-kable(computeBasicMetricsTable())
-```
-
-## Implementation Summary
-
+## Implementation
 In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
 
 - ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1 as well as our functions for calculating the closeness centrality metric. 
@@ -79,7 +61,34 @@ In order to keep our code tidy, the implementation of our code can be found in d
 
 As you can see, we have stuck with using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
 
-#Most importantly, **the computation of the closeness for each vertex is a bit faster on R than our tests on computing #it with ``C++`` with large networks.** So, although it seemed strange to us that this complex computation takes only #seconds in R (with some exceptions as we will see a little below from here), we started our project by assuming its #correctness and a very efficient implementation thanks to using the iGraph own structure for graphs. 
+
+## Results
+First of all, since we want to work with syntactic dependency trees, we should remove loops and
+multiedges (graph's properties not present in well-defined trees structures). Once removed, we can proceed with computing a summary table with the following attributes:
+
+- Language
+- N: The number of vertices
+- E: Number of edges
+- $<k>$: The mean degree
+- $\delta$: Network density of edges
+
+```{r echo=FALSE, cache=TRUE}
+kable(computeBasicMetricsTable())
+```
+
+Looking at table TODO above, talk about the basic network properties.......
+
+##Discussion
+
+Table 1 displays the basic network metrics of the different languages. As we can see, Chinese, Catalan, and Czech all have a very large number of vertices and edges, and in turn caused us the most problems during the implementation. 
+
+Looking at table 2, we can see that the results of the binomial(Erods Renyi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. It apears the graphs created under the binomial model are much more sparse than the the original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs. One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs.
+
+In stark contrast to the binomial model, the switching model produces 0 < p-value < 1 for all langugaes. 
+
+TODO - how do languages differe in regard to C and significance test. 
+
+## Methods (Implementation Summary)
 
 Having said that, **using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the directed edges.
 
@@ -96,18 +105,6 @@ So **only two languages have been left out** on our switching computations due t
 
 Computing the binomial p-value  was **very** slow on those two languages as well due to their size.
 
-##Results
-Looking at table TODO above, talk about the basic network properties.......
-
-##Discussion
-
-Table 1 displays the basic network metrics of the different languages. As we can see, Chinese, Catalan, and Czech all have a very large number of vertices and edges, and in turn caused us the most problems during the implementation. 
-
-Looking at table 2, we can see that the results of the binomial(Erods Renyi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. It apears the graphs created under the binomial model are much more sparse than the the original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs. One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs.
-
-In stark contrast to the binomial model, the switching model produces 0 < p-value < 1 for all langugaes. 
-
-TODO - how do languages differe in regard to C and significance test. 
 
 ## Methods (Bounds Optimization)
 
