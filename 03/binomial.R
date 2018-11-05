@@ -1,7 +1,7 @@
 source("baseMetrics.R")
 
 #####
-set.seed(42)
+#set.seed(42)
 
 ## Monte Carlo Algorithm
 computeBinomialPValue <- function(x, N, E, T_it) {

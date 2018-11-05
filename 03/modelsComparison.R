@@ -16,7 +16,7 @@ wd = getwd()
 if(grepl("nora", wd)) {
     setwd("~/git/csn-labs/03")
 } else {
-    setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/02")
+    setwd("~/Google Drive/UPC/Fall 2018/CSN/Labs/git_labs/Complex-and-Social-Networks/03")
 }
 rm(wd)
 
@@ -26,7 +26,7 @@ source("baseMetrics.R")
 source("binomial.R")
 source("switching.R")
 #############################
-TESTING = FALSE
+TESTING = TRUE
 options(scipen=999)
 #############################
 
@@ -46,7 +46,7 @@ computeModelsComparisonTable <- function(){
     computeSwitching = TRUE
     for (x in 1:length(languages)){
         if(TESTING){
-            x = 2    
+            x = 8    
         }
         
         cat("Iteration: ", x, "\n")
@@ -63,18 +63,19 @@ computeModelsComparisonTable <- function(){
                                      header = FALSE,
                                      stringsAsFactors = FALSE,
                                      sep = " ",
-                                     quote="")
+                                     quote="",
+                                     check.names = FALSE)
         
         N = as.numeric(degree_sequence[1, 1])
         E = as.numeric(degree_sequence[1, 2])
-        original_graph = graph.data.frame(degree_sequence[-1, ])
-        original_graph = simplify(original_graph, remove.multiple = TRUE, remove.loops = TRUE)
-        
+        original_graph = graph.data.frame(degree_sequence, directed = FALSE)
+
+        # Compute graph closeness, binomial and swithcing models
         metric <- computeGraphCloseness(original_graph, N)
-        bin <- computeBinomialPValue(metric, N, E, 20)
+        bin <- computeBinomialPValue(metric, N, E, 0)
         switch <- computeSwitchingPValue(metric, original_graph, N, 20)
         table_2 <- rbind(table_2, list(language, metric, bin, switch))
-        
+
         if(TESTING){
             break
         }
@@ -87,4 +88,5 @@ computeModelsComparisonTable <- function(){
 
 table = computeModelsComparisonTable()
 table
+
 

@@ -43,7 +43,7 @@ which is a language containted to a total set of $n$ languages: $$L = \{l_{0}, l
 We are going to compare, for each language,  its *original* model to two others:
 
 - A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be the same as those on the real network.
-- A randomized graph generated using the switching method.
+- A randomized graph generated using the switching method. 
 
 When comparing each model to the original one, we are going to work with a *traditional* **confidence interval of 0.95**, so we are going to:
 
@@ -69,10 +69,10 @@ Once removed, we can now proceed onto computing a summary table with:
 kable(computeBasicMetricsTable())
 ```
 
-We want to note that since the dependency network provided to us has been structured
-as an adjacency list, those nodes that are not connected will not appear in the adjacency list.
+##We want to note that since the dependency network provided to us has been structured
+##as an adjacency list, those nodes that are not connected will not appear in the adjacency list.
 
-Thus, we have to take them into account when creating the graph structures.
+##Thus, we have to take them into account when creating the graph structures.
 
 ## Switching method questions
 **Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
@@ -87,14 +87,14 @@ TODO: Graphviz to exemplify the cases
 
 In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
 
-- ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1.
+- ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1 as well as our functions for calculating the closeness centrality metric. 
 - ``binomial.R`` contains the implementation of the Erdos-Renyi model.
 - ``switching.R`` contains the implementation of the switching model.
 - ``modelsComparisons.R`` which contains the implementation of the comparison of the two random models respect to the original structure.
 
 As you can see, we have sticked on using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
 
-Most importantly, **the computation of the closeness for each vertex is way faster on R than our tests on computing it with ``C++`` with large networks.** So, although it seemed strange to us that this complex computation takes only seconds in R (with some exceptions as we will see a little below from here), we started our project by assuming its correctness and a very efficient implementation thanks to using the iGraph own structure for graphs. 
+#Most importantly, **the computation of the closeness for each vertex is a bit faster on R than our tests on computing #it with ``C++`` with large networks.** So, although it seemed strange to us that this complex computation takes only #seconds in R (with some exceptions as we will see a little below from here), we started our project by assuming its #correctness and a very efficient implementation thanks to using the iGraph own structure for graphs. 
 
 Having said that, **using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the directed edges.
 
@@ -112,4 +112,55 @@ So **only two languages have been left out** on our switching computations due t
 As a comment, computing the original metric closeness of these languages took several seconds instead of only a couple, as we stated above, due to both the number of vertices and the number of edges being very large.
 
 Computing the binomial p-value  was **very** slow on those two languages as well due to their size.
+
+## Bounds Optimization
+Calculating the exact closeness centrality metric for the orignal language data and all NH graphs is extermely time consuming, so we decide to estimate it using the following formula:
+
+$$
+C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
+$$
+We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. 
+
+However, we want to see if we can obtain even quicker results when computing the closeness for the NH graphs by using bounding formulas. The two formulas, bounding below and above, are as follows:
+$$
+C_{min} = \frac{1}{N} \sum_{i=1}^{M}C_i
+$$
+$$
+C_{max} = \frac{1}{N} \sum_{i=1}^{M}C_i + 1 - \frac{M}{N}
+$$
+When computing the global closeness centrality of the NH graphs, we iterate over each vertex and compute its local closeness. During each iteration, we calculate a new $C_{min}$ and $C_{max}$. From these formulas, we know that if $C_min} \geq C$ then it can be concluded that $C_{NH} < C$. We also know that if $C_{max} < C$ then it can be concluded that $C_{NH} < C$. Once this occurs, we can simply stop calculating the gloabl closeness and be confident that our result is accurate. 
+
+Taking this one step further, we want to see if the ordering of the vertices has an effect on the speed of this method. The orderings we will test are the following:
+
+- Original Ordering
+- Random Order of Vertices (Using a uniformly random permutation of the vertices)
+- Increasing order by degree
+- Decreasing order by degree
+
+We test the orderins with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
+
+## TODO insert table
+
+As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of NH for all the languages. 
+
+
+## Switching Method Implementation
+In order to test the the data against a NH, we utilized the switching method. This method generates a new random graph by switching random edges while maintaing the same degree sequence of the original data. It also ensure no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and if safe to do so creates two new edges u ~ t and s ~ v.  
+
+As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to swtich. While the adjacnecy matrix was used to check that the switch was safe to make. 
+
+To start the process, we first generated two vectors of size QE (E = number of edges, Q = log(E)) with numbers chosen uniformuly at random from 1:E. These acted as the pairs of edges that we would attempt to switch. 
+
+Next, we iterated through each of the edge pairings and checked that they were safe to switch. That is, we checked that self-loops wouldn't be created:
+-  t != u
+-  v != s
+We also checked that no hyperedges would be created:
+- Edges s ~ v or u ~ t do not exist. 
+
+We then performed the switch if it was safe to do so. Any failures that occured counted towards the QE switches performed. 
+
+
+
+
+
 
