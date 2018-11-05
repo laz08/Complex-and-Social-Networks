@@ -50,7 +50,6 @@ When comparing each model to the original network, we are going to work with a *
 
 This p-value is going to be computed using the Monte-Carlo method explained during theory class.
 
-## Implementation
 In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
 
 - ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1 as well as our functions for calculating the closeness centrality metric. 
@@ -59,11 +58,12 @@ In order to keep our code tidy, the implementation of our code can be found in d
 - ``switching.cpp`` contains the implementation of the switching moel in c++ (needed for the large Czech and Chinese languages)
 - ``modelsComparisons.R`` which contains the implementation of the comparison of the two random models respect to the original structure.
 
-As you can see, we have stuck with using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
+As you can see, we have stuck with using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.* We did however end up using c++ for the switching model for large languages, which we will discuss later. 
+
 
 
 ## Results
-First of all, since we want to work with syntactic dependency trees, we should remove loops and
+Before computing any results, since we want to work with syntactic dependency trees, we need to remove loops and
 multiedges (graph's properties not present in well-defined trees structures). Once removed, we can proceed with computing a summary table with the following attributes:
 
 - Language
@@ -76,7 +76,38 @@ multiedges (graph's properties not present in well-defined trees structures). On
 kable(computeBasicMetricsTable())
 ```
 
-Looking at table TODO above, talk about the basic network properties.......
+Next, we focus on the Basque language to test our implmentation and determine if we need to use any estimation procedures to speed up the computation time. We compute the closness centrality of the original data as well as the p-values for the binomial and switching methods (with T=20 iterations when computing the models). We have combined this with the results of all languages which can be found in table TODO below. 
+
+While computing these metrics for the Basque langauge, it became apparant that we couldn't do this for all languages, as the computation time was prohibitive. Computing the exact closeness for the Basque language took nearly 5 minutes for a single run. Doing this for every language and 20 times for every model is infeasible. Thus, we decide to use an estimation of the closeness for the original network data. This was done using the following formula:
+
+$$
+C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
+$$
+We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. In the end, we choose $M \approx N/50$ in order to be a bit more accurate. 
+
+Now we want to see if we can obtain even quicker results when computing the closeness for the Null Hypothesis (NH) graphs by using bounding formulas. The two formulas, bounding below and above, are as follows:
+$$
+C_{min} = \frac{1}{N} \sum_{i=1}^{M}C_i
+$$
+$$
+C_{max} = \frac{1}{N} \sum_{i=1}^{M}C_i + 1 - \frac{M}{N}
+$$
+
+When computing the global closeness centrality of the NH graphs, we iterate over each vertex and compute its local closeness. During each iteration, we calculate a new $C_{min}$ and $C_{max}$. From these formulas, we know that if $C_min} \geq C$ then it can be concluded that $C_{NH} < C$. We also know that if $C_{max} < C$ then it can be concluded that $C_{NH} < C$. Once this occurs, we can simply stop calculating the gloabl closeness and be confident that our result is accurate. 
+
+Taking this one step further, we want to see if the ordering of the vertices has an effect on the speed of this method. The orderings we will test are the following:
+
+- Original Ordering
+- Random Order of Vertices (Using a uniformly random permutation of the vertices)
+- Increasing order by degree
+- Decreasing order by degree
+
+We test the orderings with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
+
+TODO insert table
+
+As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$. The final results are displayed in table TODO below. 
+
 
 ##Discussion
 
@@ -88,9 +119,12 @@ In stark contrast to the binomial model, the switching model produces 0 < p-valu
 
 TODO - how do languages differe in regard to C and significance test. 
 
+
+
+
 ## Methods (Implementation Summary)
 
-Having said that, **using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the directed edges.
+**Using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the directed edges.
 
 On our first attempt, **we tried using an adjacency edge list for each node**, since we know that it is very efficient time-wise when accessing the list of edges related to a node. However, **the computation of such structure for each new model took 5 or more minutes**, without taking into account the switching model computation. This was an **overhead that was not feasible for us, for we had to compute log(E) times E models for each language.** Thus, we opted on using an adjacency matrix, which could be computed within a couple of seconds and accessing it randomly was also immediate, although it was more hungry memory-wise.
 
@@ -106,51 +140,9 @@ So **only two languages have been left out** on our switching computations due t
 Computing the binomial p-value  was **very** slow on those two languages as well due to their size.
 
 
-## Methods (Bounds Optimization)
-
-
-## Switching method questions
-## TODO - we should add this to the section below
-**Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
-
-- **preserve the degree sequence?** 
-TODO: Graphviz to exemplify the cases
-- **preserve the degree sequence but produce edges that are not allowed (loops, multiedges)?**
-TODO: Graphviz to exemplify the cases
-
-
-
-Calculating the exact closeness centrality metric for the orignal language data and all NH graphs is extermely time consuming, so we decide to estimate it using the following formula:
-
-$$
-C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
-$$
-We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. In the end, we choose $M \approx N/50$ in order to be a bit more accurate. 
-
-However, we want to see if we can obtain even quicker results when computing the closeness for the NH graphs by using bounding formulas. The two formulas, bounding below and above, are as follows:
-$$
-C_{min} = \frac{1}{N} \sum_{i=1}^{M}C_i
-$$
-$$
-C_{max} = \frac{1}{N} \sum_{i=1}^{M}C_i + 1 - \frac{M}{N}
-$$
-When computing the global closeness centrality of the NH graphs, we iterate over each vertex and compute its local closeness. During each iteration, we calculate a new $C_{min}$ and $C_{max}$. From these formulas, we know that if $C_min} \geq C$ then it can be concluded that $C_{NH} < C$. We also know that if $C_{max} < C$ then it can be concluded that $C_{NH} < C$. Once this occurs, we can simply stop calculating the gloabl closeness and be confident that our result is accurate. 
-
-Taking this one step further, we want to see if the ordering of the vertices has an effect on the speed of this method. The orderings we will test are the following:
-
-- Original Ordering
-- Random Order of Vertices (Using a uniformly random permutation of the vertices)
-- Increasing order by degree
-- Decreasing order by degree
-
-We test the orderings with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
-
-# TODO insert table
-
-As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of NH for all the languages. 
-
 
 ## Methods (Switching Method Implementation)
+
 In order to test the data against a NH, we utilized the switching method. This method generates a new random graph with the same degree sequence of the original graph by switching random edges. It ensures no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and, if safe to do so, creates two new edges u ~ t and s ~ v.  
 
 As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to swtich. The adjacnecy matrix was used to check that the switch was safe to make. 
@@ -158,9 +150,11 @@ As mentioned previously, we utilized two separate data structures to implement t
 To start the process, we first generated two vectors of size QE (E = number of edges, Q = log(E)) with numbers chosen uniformuly at random from 1:E. These acted as the pairs of edges that we would attempt to switch. 
 
 Next, we iterated through each of the edge pairings and checked that they were safe to switch. That is, we checked that self-loops wouldn't be created:
+TODO: Graphviz to exemplify the cases
 -  t != u
 -  v != s
-We also checked that no hyperedges would be created:
+We also checked that no multiedges would be created:
+TODO: Graphviz to exemplify the cases
 - Edges s ~ v or u ~ t do not exist. 
 
 If it was safe to do so, we then made the switch. Any failures that occured during this process counted towards the QE switches performed. 
