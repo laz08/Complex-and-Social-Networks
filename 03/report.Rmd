@@ -24,7 +24,7 @@ source("baseMetrics.R")
 
 # Introduction
 
-On this lab we are asked to verify the possible significance of network metrics applied
+For this lab we are asked to verify the possible significance of network metrics applied
 to global syntactic dependency trees, generated from large samples of 10 different languages.
 
 The possible metrics to study are:
@@ -32,20 +32,18 @@ The possible metrics to study are:
 - *Clustering Coefficient* $C$ defined by Watss-Strogatz ($C_{WS}$)
 - *Closeness Centrality* $\mathcal{C}$
 
-We have chosen to work with the metric of  *Closeness Centrality* $\mathcal{C}$ and check if this metric
-is significantly large when comparing the real model to other two generated randomly using two different methods: the Erdős-Rényi and the Switching ones.
-
-## Methodology
+We have chosen to work with  *Closeness Centrality* $\mathcal{C}$ and check if this metric
+is significantly large when comparing the real model to other two generated randomly using two different methods: the Erdős-Rényi and the Switching methods.
 
 Our null model $H_{0}$ is each syntactic tree created from a syntatic network example of a language $l$,
 which is a language containted to a total set of $n$ languages: $$L = \{l_{0}, l_{1}, .., l_{n}\}$$
 
-We are going to compare, for each language,  its *original* model to two others:
+We are going to compare, for each language, its *original* model to two others:
 
 - A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be the same as those on the real network.
-- A randomized graph generated using the switching method. 
+- A randomized graph generated using the switching method. The degree distribution of the original network is maintained in this model. 
 
-When comparing each model to the original one, we are going to work with a *traditional* **confidence interval of 0.95**, so we are going to:
+When comparing each model to the original network, we are going to work with a *traditional* **confidence interval of 0.95**, so we are going to:
 
 - Reject the model if the p-value is outside of our confidence interval, thus $$p-value > 0.05$$
 - Accept the model if the p-value is inside the confidence interval, thus $$p-value \le 0.05$$
@@ -69,20 +67,6 @@ Once removed, we can now proceed onto computing a summary table with:
 kable(computeBasicMetricsTable())
 ```
 
-##We want to note that since the dependency network provided to us has been structured
-##as an adjacency list, those nodes that are not connected will not appear in the adjacency list.
-
-##Thus, we have to take them into account when creating the graph structures.
-
-## Switching method questions
-**Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
-
-- **preserve the degree sequence?** 
-TODO: Graphviz to exemplify the cases
-- **preserve the degree sequence but produce edges that are not allowed (loops, multiedges)?**
-TODO: Graphviz to exemplify the cases
-
-
 ## Implementation Summary
 
 In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
@@ -90,9 +74,10 @@ In order to keep our code tidy, the implementation of our code can be found in d
 - ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1 as well as our functions for calculating the closeness centrality metric. 
 - ``binomial.R`` contains the implementation of the Erdos-Renyi model.
 - ``switching.R`` contains the implementation of the switching model.
+- ``switching.cpp`` contains the implementation of the switching moel in c++ (needed for the large Czech and Chinese languages)
 - ``modelsComparisons.R`` which contains the implementation of the comparison of the two random models respect to the original structure.
 
-As you can see, we have sticked on using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
+As you can see, we have stuck with using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.*
 
 #Most importantly, **the computation of the closeness for each vertex is a bit faster on R than our tests on computing #it with ``C++`` with large networks.** So, although it seemed strange to us that this complex computation takes only #seconds in R (with some exceptions as we will see a little below from here), we started our project by assuming its #correctness and a very efficient implementation thanks to using the iGraph own structure for graphs. 
 
@@ -109,17 +94,41 @@ So **only two languages have been left out** on our switching computations due t
 - **Chinese**, with over 40.000 nodes.
 - **Czech**, with over 69.000 nodes.
 
-As a comment, computing the original metric closeness of these languages took several seconds instead of only a couple, as we stated above, due to both the number of vertices and the number of edges being very large.
-
 Computing the binomial p-value  was **very** slow on those two languages as well due to their size.
 
-## Bounds Optimization
+##Results
+Looking at table TODO above, talk about the basic network properties.......
+
+##Discussion
+
+Table 1 displays the basic network metrics of the different languages. As we can see, Chinese, Catalan, and Czech all have a very large number of vertices and edges, and in turn caused us the most problems during the implementation. 
+
+Looking at table 2, we can see that the results of the binomial(Erods Renyi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. It apears the graphs created under the binomial model are much more sparse than the the original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs. One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs.
+
+In stark contrast to the binomial model, the switching model produces 0 < p-value < 1 for all langugaes. 
+
+TODO - how do languages differe in regard to C and significance test. 
+
+## Methods (Bounds Optimization)
+
+
+## Switching method questions
+## TODO - we should add this to the section below
+**Given two edges $u \sim v$ and $s \sim t$, what are the switchings that **
+
+- **preserve the degree sequence?** 
+TODO: Graphviz to exemplify the cases
+- **preserve the degree sequence but produce edges that are not allowed (loops, multiedges)?**
+TODO: Graphviz to exemplify the cases
+
+
+
 Calculating the exact closeness centrality metric for the orignal language data and all NH graphs is extermely time consuming, so we decide to estimate it using the following formula:
 
 $$
 C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
 $$
-We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. 
+We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. In the end, we choose $M \approx N/50$ in order to be a bit more accurate. 
 
 However, we want to see if we can obtain even quicker results when computing the closeness for the NH graphs by using bounding formulas. The two formulas, bounding below and above, are as follows:
 $$
@@ -137,17 +146,17 @@ Taking this one step further, we want to see if the ordering of the vertices has
 - Increasing order by degree
 - Decreasing order by degree
 
-We test the orderins with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
+We test the orderings with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
 
-## TODO insert table
+# TODO insert table
 
 As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of NH for all the languages. 
 
 
-## Switching Method Implementation
-In order to test the the data against a NH, we utilized the switching method. This method generates a new random graph by switching random edges while maintaing the same degree sequence of the original data. It also ensure no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and if safe to do so creates two new edges u ~ t and s ~ v.  
+## Methods (Switching Method Implementation)
+In order to test the data against a NH, we utilized the switching method. This method generates a new random graph with the same degree sequence of the original graph by switching random edges. It ensures no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and, if safe to do so, creates two new edges u ~ t and s ~ v.  
 
-As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to swtich. While the adjacnecy matrix was used to check that the switch was safe to make. 
+As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to swtich. The adjacnecy matrix was used to check that the switch was safe to make. 
 
 To start the process, we first generated two vectors of size QE (E = number of edges, Q = log(E)) with numbers chosen uniformuly at random from 1:E. These acted as the pairs of edges that we would attempt to switch. 
 
@@ -157,7 +166,9 @@ Next, we iterated through each of the edge pairings and checked that they were s
 We also checked that no hyperedges would be created:
 - Edges s ~ v or u ~ t do not exist. 
 
-We then performed the switch if it was safe to do so. Any failures that occured counted towards the QE switches performed. 
+If it was safe to do so, we then made the switch. Any failures that occured during this process counted towards the QE switches performed. 
+
+During this process, we ran into prohibitively slow computation times for the Chinese and Czech languages - so slow that we couldn't contiue with this implmentation. This was due to the extreme size of the adjacency matrix R created. Therefore, we decided to write the same switching procedure in c++ and use this for Czech and Chinese. Even with c++, performing all 20 iterations of the switching models took upwards of 15min each. 
 
 
 
