@@ -20,6 +20,7 @@ if(grepl("nora", wd)) {
 rm(wd)
 
 source("baseMetrics.R")
+source("nullHypothesisResults.R")
 ```
 
 # Introduction
@@ -76,9 +77,9 @@ multiedges (graph's properties not present in well-defined trees structures). On
 kable(computeBasicMetricsTable())
 ```
 
-Next, we focus on the Basque language to test our implementation and determine if we need to use any estimation procedures to speed up the computation time. First, we compute the exact closeness centrality of the original data as well as the p-values for the binomial and switching methods (with T=20 iterations when computing the models). We have combined this with the results of all languages which can be found in table TODO below. 
+Next, we focus on the Basque language to test our implmentation and determine if we need to use any estimation procedures to speed up the computation time. First, we compute the exact closness centrality of the original data as well as the p-values for the binomial and switching methods (with T=20 iterations when computing the models). We have combined this with the results of all languages which can be found in table 3 below. 
 
-While computing these metrics for the Basque language, it became apparent that we couldn't do this for all languages, as the computation time was prohibitive. Computing the exact closeness for the Basque language took nearly 5 minutes for a single run. Doing this for every language and 20 times for every model is infeasible. Thus, we decided to use an estimation of the closeness for the original network data. This was done using the following formula:
+While computing these metrics for the Basque langauge, it became apparant that we couldn't do this for all languages, as the computation time was prohibitive (especially on our old computers). Computing the exact closeness for the Basque language took nearly 5 minutes for a single run. We decided that doing this for every language and 20 times for every model is infeasible. Thus, we decide to use an estimation of the closeness for the original network data. This was done using the following formula:
 
 $$
 C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
@@ -104,34 +105,35 @@ Taking this one step further, we want to see if the ordering of the vertices has
 
 We test the orderings with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
 
-TODO insert table
+```{r echo=FALSE, cache=TRUE}
+kable(M_results, 
+      caption="\\label{tab:table2} Ordering for bounding functions (time in minutes)",
+      col.names = c("language", "default", "randomized", "increasing degree", "decreaseing degree"),
+      align=rep('c', 5))
+```
 
-As we can see, it doesn't seem that the ordering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$. The final results are displayed in table TODO below. 
+As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$. The final results are displayed in table 3 below. 
+
+```{r echo=FALSE, cache=TRUE}
+kable(closeness_metrics, 
+      caption="\\label{tab:table3} Closeness Metrics and P-values",
+      col.names = c("Language", "Closeness", "p-value (binomial)", "p-value (switching"),
+      align=rep('c', 5))
+```
 
 
 ## Discussion
 
 Table 1 displays the basic network metrics of the different languages. As we can see, Chinese, Catalan, and Czech all have a very large number of vertices and edges, and in turn caused us the most problems during the execution phase. 
 
-Looking at table 2, we can see that the results of the binomial (Erdos Renyi) and switching methods differ significantly. 
-
-For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. 
-
-
-It appears the graphs created under the binomial model are much more sparse than the  original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs.
-
-One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs. In fact, the probability of creating an edge between two edges is always the same independently of factors such as the degree of the vertices. 
-
-However, in syntactic networks this probability is not the same for all the words (vertices).
+Looking at table 2, we can see that the results of the binomial (Erdos Renyi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. It appears the graphs created under the binomial model are much more sparse than the  original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs. One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs. In fact, the probability of creating an edge between two edges is always the same independently of factors such as the degree of the vertices. However, in syntactic networks this probability is not the same for all the words (vertices).
 In other words, the binomial model treats each vertex as equal while syntatic language networks do not. 
 
 In stark contrast to the binomial model, the switching model produces 0 < p-value < 1 for all languages. 
 
-And in fact, if we look at the table, we can see that all languages (except for catalan) have a $p-value \gt 0.05$. This means that we can reject the null hypothesis for those languages and thus we cannot accept that our metric (closeness centrality) is not larger on the theoreticall randomized, model.
+And in fact, if we look at the table, we can see that all languages (except for catalan) have a $p-value \ge 0.05$. This means that we can reject the null hypothesis for those languages and thus we cannot accept that our metric (closeness centrality) is not larger on the theoreticall randomized, model.
 
 TODO - how do languages differ in regard to C and significance test. 
-
-
 
 
 ## Methods (Implementation Summary)
@@ -162,11 +164,10 @@ As mentioned previously, we utilized two separate data structures to implement t
 To start the process, we first generated two vectors of size QE (E = number of edges, Q = log(E)) with numbers chosen uniformuly at random from 1:E. These acted as the pairs of edges that we would attempt to switch. 
 
 Next, we iterated through each of the edge pairings and checked that they were safe to switch. That is, we checked that self-loops wouldn't be created:
-TODO: Graphviz to exemplify the cases
 -  t != u
 -  v != s
+
 We also checked that no multiedges would be created:
-TODO: Graphviz to exemplify the cases
 - Edges s ~ v or u ~ t do not exist. 
 
 If it was safe to do so, we then made the switch. Any failures that occured during this process counted towards the QE switches performed. 
