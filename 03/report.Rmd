@@ -28,65 +28,51 @@ source("nullHypothesisResults.R")
 For this lab we are asked to verify the possible significance of network metrics applied
 to global syntactic dependency trees, generated from large samples of 10 different languages.
 
-The possible metrics to study are:
+We have chosen to work with Closeness Centrality $\mathcal{C}$ and check if this metric is significantly large when comparing the real network to randomly generated networks using two different methods: Erdős-Rényi and Switching.
 
-- *Clustering Coefficient* $C$ defined by Watss-Strogatz ($C_{WS}$)
-- *Closeness Centrality* $\mathcal{C}$
+Our base model is each syntactic tree created from a syntatic network example of a language $l$, which is a language contained to a total set of $n$ languages: $L = \{l_{0}, l_{1}, .., l_{n}\}$
 
-We have chosen to work with  *Closeness Centrality* $\mathcal{C}$ and check if this metric
-is significantly large when comparing the real model to other two generated randomly using two different methods: the Erdős-Rényi and the Switching methods.
+For each language, we are going to compare its original model to two others, which will be our null models $N_{0}$:
 
-
-Our base model is each syntactic tree created from a syntatic network example of a language $l$, which is a language contained to a total set of $n$ languages: $$L = \{l_{0}, l_{1}, .., l_{n}\}$$
-
-We are going to compare, for each language, its *original* model to two others, which will be our null models $N_{0}$:
-
-- A binomial graph generated randomly. In other words, a Erdos-Renyi graph. Its number of vertices and edges will always be the same as those on the real network.
+- A binomial (Erdos-Renyi) graph generated randomly. The number of vertices and edges will be the same as those of the real network.
 - A randomized graph generated using the switching method. The degree distribution of the original network is maintained in this model. 
 
-When comparing each model to the original network, we are going to work with a *traditional* **confidence interval of 0.95**, so we are going to:
+When comparing each model to the original network, we are going to work with a traditional confidence interval of 0.95. This means we will reject the null hypothesis if the null model metric is smaller than the real network metric more than 95% of the time (p-value $\le$ 0.05). On the other hand, we will fail to reject the null hypothesis if p-value > 0.05. This p-value is going to be computed using the Monte-Carlo method explained during theory class. 
 
-- Reject the model as the null model the real graph is based on, if the p-value is outside of our confidence interval, thus $$p-value > 0.05$$
-- Accept the model as the null model the real graph is based on, if the p-value is inside the confidence interval, thus $$p-value \le 0.05$$
-
-This p-value is going to be computed using the Monte-Carlo method explained during theory class.
-
-In order to keep our code tidy, the implementation of our code can be found in different files, each one containing one function of the implementation encapsulated in it.
+In order to keep our code tidy, the implementation can be found in different files, each one containing one function of the implementation encapsulated in it.
 
 - ``baseMetrics.R`` contains the implementation of the base metrics presented in table 1 as well as our functions for calculating the closeness centrality metric. 
 - ``binomial.R`` contains the implementation of the Erdos-Renyi model.
 - ``switching.R`` contains the implementation of the switching model.
-- ``switching.cpp`` contains the implementation of the switching moel in `C++` (needed for the large Czech and Chinese languages)
-- ``modelsComparisons.R`` which contains the implementation of the comparison of the two random models respect to the original structure.
+- ``switching.cpp`` contains the implementation of the switching model in `C++` (needed for the large Czech and Chinese languages)
+- ``modelsComparisons.R`` contains the implementation of the comparison of the two random models to the original structure.
 
-As you can see, we have stuck with using R for this laboratory, for it has already implemented libraries on its own for a quick read of the nodes, edges and creation of a graph from them using the iGraph package. It also simplifies the graph by removing the multiedges and loops almost instantly, which biased us on at least *using the iGraph package.* We did however end up using `C++` for the switching model for large languages, which we will discuss later. 
-
+As you can see, we opted to use `R` for most of this lab. This is because of the many libraries availabe for quickly reading nodes, edges and creating and manipulating graphs. R also allows us to easily simplify the graph by removing the multi-edges and loops almost instantly, which biased us on at least using the iGraph package. We did however end up using `C++` for the switching model for the large languages. We will discuss the reason for this change later in the report.  
 
 
 ## Results
 Before computing any results, since we want to work with syntactic dependency trees, we need to remove loops and
-multiedges (graph's properties not present in well-defined trees structures). Once removed, we can proceed with computing a summary table with the following attributes:
-
-- Language
-- N: The number of vertices
-- E: Number of edges
-- $<k>$: The mean degree
-- $\delta$: Network density of edges
+multi-edges (graph's properties not present in well-defined trees structures). Once removed, we can proceed with computing a summary table displayed below:
 
 ```{r echo=FALSE, cache=TRUE, warning=FALSE}
-kable(computeBasicMetricsTable())
+kable(computeBasicMetricsTable(),
+            caption="\\label{tab:table1}Metrics of Global Syntatic Dependency Networks",
+      col.names = c("language", "N", "E", "$\\langle k \\rangle$", "$\\delta$"),
+      align=rep('c', 5))
 ```
 
-Next, we focus on the Basque language to test our implmentation and determine if we need to use any estimation procedures to speed up the computation time. First, we compute the exact closness centrality of the original data as well as the p-values for the binomial and switching methods (with T=20 iterations when computing the models). We have combined this with the results of all languages which can be found in table 3 below. 
+In table 1 above, N is the number of vertices, E is the number of edges, $\langle k \rangle$ is the mean degree, and $\delta$ is the network density of edges. 
 
-While computing these metrics for the Basque langauge, it became apparant that we couldn't do this for all languages, as the computation time was prohibitive (especially on our old computers). Computing the exact closeness for the Basque language took nearly 5 minutes for a single run. We decided that doing this for every language and 20 times for every model is infeasible. Thus, we decide to use an estimation of the closeness for the original network data. This was done using the following formula:
+Next, we focus solely on the Basque language to test our implmentation and determine if we need to use any estimation procedures to speed up the computation time. First, we compute the exact closness centrality of the original data as well as the p-values for the binomial and switching methods (with T=20 iterations when computing the models). The results can be found in Table 3 below. We have combined these results with the results of all languages. 
+
+While computing these closness centrality for the Basque langauge, it became apparant that we couldn't use our initial implementation for all languages, as the computation time was prohibitive (especially on our old computers). Computing the exact closeness for the Basque language took nearly 3 minutes for a single run. We decided that doing this for every language and 20 times for every model is infeasible. Thus, we decide to use an estimation of the closeness for the original network data. This was done using the following formula:
 
 $$
 C \approx \frac{1}{M} \sum_{i=1}^{M}C_i
 $$
-We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. In the end, we choose $M \approx N/50$ in order to be a bit more accurate. 
+We know that by using a uniformly random permutation of the original vertices in the above formula, we can obtain a good estimate (with small error) when M $\approx$ 100M/N. This is good for estimating the closess centrality of our real language data. In the end, we choose $M \approx N/50$ in order to be a bit more accurate and still allow us enough time to compute the metric and test its significance for all languages. 
 
-Now we want to see if we can obtain even quicker results when computing the closeness for the Null Hypothesis (NH) graphs by using bounding formulas. The two formulas, bounding below and above, are as follows:
+Now that we have an M for estimating the closeness centrality of the original networks, we want to see if we can obtain even quicker results when computing the closeness for the null hypothesis (NH) graphs by using bounding formulas. After all, in order to get accurate results, we need to test the metric agaist at least T=20 null models. The two formulas we used, bounding $C$ below and above, are as follows:
 $$
 C_{min} = \frac{1}{N} \sum_{i=1}^{M}C_i
 $$
@@ -98,21 +84,23 @@ When computing the global closeness centrality of the NH graphs, we iterate over
 
 Taking this one step further, we want to see if the ordering of the vertices has an effect on the speed of this method. The orderings we will test are the following:
 
-- Original Ordering
-- Random Order of Vertices (Using a uniformly random permutation of the vertices)
+- Original vertex ordering
+- Random order of vertices (Using a uniformly random permutation of the vertices)
 - Increasing order by degree
 - Decreasing order by degree
 
-We test the orderings with the Basque language on the switching method NH graphs. The following table displays the number of iterations needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
+We test the orderings with the Basque language on the switching method NH graphs. Table 2 displays the time (in minutes) needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
 
 ```{r echo=FALSE, cache=TRUE}
 kable(M_results, 
-      caption="\\label{tab:table2} Ordering for bounding functions (time in minutes)",
+      caption="\\label{tab:table2} Computation time (in minutes) for various vertex orderings",
       col.names = c("language", "default", "randomized", "increasing degree", "decreaseing degree"),
       align=rep('c', 5))
 ```
 
-As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$. The final results are displayed in table 3 below. 
+As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore, we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$ to speed up our computation times. $M_{max}$ is the maximum number of vertices that we will check when computing the global closness centrality of the NH graphs. 
+
+After all of this testing, we can finally compute the closesness centrality of all lanugaes and test the signifance against null models. The final results are displayed in table 3 below. 
 
 ```{r echo=FALSE, cache=TRUE}
 kable(closeness_metrics, 
