@@ -13,6 +13,7 @@
 #include <random>
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -73,7 +74,7 @@ void switching(vector<vector<int>> &adj, vector<vector<int>> &edges, int E){
     // Data structures
     vector<int> u_v_id;
     vector<int> s_t_id;
-    int QE = E*4;
+    int QE = E*log2(E);
     
     // Configure random number generator
     random_device rd;
