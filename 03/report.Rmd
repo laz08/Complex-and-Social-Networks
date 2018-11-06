@@ -30,7 +30,7 @@ to global syntactic dependency trees, generated from large samples of 10 differe
 
 We have chosen to work with Closeness Centrality $\mathcal{C}$ and check if this metric is significantly large when comparing the real network to randomly generated networks using two different methods: Erdős-Rényi and Switching.
 
-Our base model is each syntactic tree created from a syntatic network example of a language $l$, which is a language contained to a total set of $n$ languages: $L = \{l_{0}, l_{1}, .., l_{n}\}$
+Our base model is each syntactic tree created from a syntatic network example of a language $l$, which is a language contained to a total set of $n$ languages: $L = \{l_{0}, l_{1}, .., l_{n}\}$, where $n=10$.
 
 For each language, we are going to compare its original model to two others, which will be our null models $N_{0}$:
 
@@ -89,23 +89,23 @@ Taking this one step further, we want to see if the ordering of the vertices has
 - Increasing order by degree
 - Decreasing order by degree
 
-We test the orderings with the Basque language on the switching method NH graphs. Table 2 displays the time (in minutes) needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
+We test the orderings with the Basque language, since it is the smallest one, on the switching method NH graphs. Table 2 displays the time (in minutes) needed before the $C_{min}$ or $C_{max}$ bounds have an effect. 
 
 ```{r echo=FALSE, cache=TRUE}
 kable(M_results, 
       caption="\\label{tab:table2} Computation time (in minutes) for various vertex orderings",
-      col.names = c("language", "default", "randomized", "increasing degree", "decreaseing degree"),
+      col.names = c("Language", "Default", "Randomized", "Increasing degree", "Decreasing degree"),
       align=rep('c', 5))
 ```
 
-As we can see, it doesn't seem that the odering has much of an effect - at least on the Basque language. Therefore, we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$ to speed up our computation times. $M_{max}$ is the maximum number of vertices that we will check when computing the global closness centrality of the NH graphs. 
+As we can see, it doesn't seem that the ordering has much of an effect - at least on the Basque language. Therefore, we decide to use the uniformly random ordering when computing the closeness centrality of the NH graphs for all the languages. Furthermore, we set $M_{max} = N/1000$ to speed up our computation times. $M_{max}$ is the maximum number of vertices that we will check when computing the global closeness centrality of the NH graphs. 
 
-After all of this testing, we can finally compute the closesness centrality of all lanugaes and test the signifance against null models. The final results are displayed in table 3 below. 
+After all of this testing, we can finally compute the closeness centrality of all languages and test the significance against null models. The final results are displayed in table 3 below. 
 
 ```{r echo=FALSE, cache=TRUE}
 kable(closeness_metrics, 
       caption="\\label{tab:table3} Closeness Metrics and P-values",
-      col.names = c("Language", "Closeness", "p-value (binomial)", "p-value (switching"),
+      col.names = c("Language", "Closeness", "p-value (Binomial)", "p-value (Switching)"),
       align=rep('c', 5))
 ```
 
@@ -114,53 +114,73 @@ kable(closeness_metrics,
 
 Table 1 displays the basic network metrics of the different languages. As we can see, Chinese, Catalan, and Czech all have a very large number of vertices and edges, and in turn caused us the most problems during the execution phase. 
 
-Looking at table 2, we can see that the results of the binomial (Erdos Renyi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. It appears the graphs created under the binomial model are much more sparse than the  original graphs. This is expected and tells us that syntatic language networks have a more more closely connected structure than binomial graphs. One reason for this is the fact that the binomial random graphs are built by adding random edges and do not adhere to the degree distribution of the original graphs. In fact, the probability of creating an edge between two edges is always the same independently of factors such as the degree of the vertices. However, in syntactic networks this probability is not the same for all the words (vertices).
-In other words, the binomial model treats each vertex as equal while syntatic language networks do not. 
+Looking at table 2, we can see that the results of the binomial (Erdős-Rényi) and switching methods differ significantly. For all languages, the binomial model has a p-value of 0, signifying that the under this null hypothesis, the mean closeness centrality is significantly large. 
 
-In stark contrast to the binomial model, the switching model produces 0 < p-value < 1 for all languages. 
-
-And in fact, if we look at the table, we can see that all languages (except for catalan) have a $p-value \ge 0.05$. This means that we can reject the null hypothesis for those languages and thus we cannot accept that our metric (closeness centrality) is not larger on the theoreticall randomized, model.
-
-TODO - how do languages differ in regard to C and significance test. 
+Our Binomial models have been created with the same number of vertices and edges and always contemplates the probability of creating an edge between two vertices as the same. That is, it does not take into account other factors such as the existing degree of a vertex in the moment of adding a new edge. In other words, the binomial model treats each vertex as equal while syntatic language networks do not.  Due to this,  the graphs created under the binomial model are much more sparse than the  original graphs, and thus, the closeness metric is always smaller.
 
 
-## Methods (Implementation Summary)
+In stark contrast to the binomial model, the switching model produces a varying p-value such that $$0 < p-value < 1$$ for all languages. 
 
-**Using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method.** Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes. This adjacency matrix takes into account the edges.
+And in fact interestingly enough, if we look at the table, we can see that all languages, except for catalan, have a $p-value \ge 0.05$. This means that many of the randomized models created with the switching method have a larger closeness metric, thus resulting in a p-value above 0.05.
 
-On our first attempt, **we tried using an adjacency edge list for each node**, since we know that it is very efficient time-wise when accessing the list of edges related to a node. However, **the computation of such structure for each new model took 5 or more minutes**, without taking into account the switching model computation. This was an **overhead that was not feasible for us, for we had to compute log(E) times E models for each language.** Thus, we opted on using an adjacency matrix, which could be computed within a couple of seconds and accessing it randomly was also immediate, although it was more hungry memory-wise.
+Since the switching model starts from the original graph, it makes sense that the closeness centrality may be larger in many cases. First of all, because it preserves the degree sequence. This is a great advantage of ensuring a closeness at least very close to the original one. And second, since when we are performing a switch we check that it is correct before actually saving it, we are also enforcing a graph somewhat similar to the previous one on each iteration.
 
-Opting to use this method for the switching method resulted in not being able to compute the metrics for those languages with a very big numbre of vertices. Namely, Chinese was impossible for us, for it had over 40k nodes, which would need a matrix of $40.000 * 40.000$.
+We have tried to see why the p-value is so low on the case on Catalan and not on the other languages, and we have not been able to arrive to a solid conclusion other than attributing this outlier to the randomness of the switching method.
+
+As for the closeness centrality itself on each language network, we can see that the best connected languages in regards to closeness centrality metric are Catalan, Chinese, English, Italian and Turkish. Opposite to Basque and Czech, which have a lower values values of 0.27 and 0.28 respectively.
+
+It is interesting to point how this metric work as it does, for Basque and Czech are actually on extreme opposite ends in regards of the number of vertices they have in their network, with Basque having the lowest value with a total of 12k meanwhile Czech is the largest one by difference with 69k. This means that their nodes are connected in such way that averaging their inverse geodesic distances gives a similar numeric result.
+
+
+## Methods (Overall implementation Summary)
+
+Using the iGraph graph structure on its own proved to be very slow  when computing a new model using the Switching method. Because of this, we chose to work with an adjacency matrix that represents the edges between two nodes, which is a more memory-hungry method but also faster to compute.
+
+Even though on our first attempt we tried using an adjacency edge list for each node, since we know that it is very efficient time-wise when accessing the list of edges related to a node, we could not settle on it. The computation of such structure converting it from the iGraph structure took 5 or more minutes  for each new model, without taking into account the switching model computation. This was an overhead that was not feasible for us, for we had to compute 20 times the log(E) times E models for each language. Thus, we opted on using an adjacency matrix, which could be computed within a couple of seconds and accessing it randomly was also immediate, although it was more hungry memory-wise as previously stated.
+
+Opting to use this method for the switching method resulted in not being able to compute the metrics for those languages with a very big number of vertices in R. Namely, Chinese was impossible, for it had over 40k nodes, which would need a matrix of $40.000 * 40.000$.
 
 Although Catalan has a very close number of nodes, our computer resources allow having a matrix of $36.000 * 36.000$.
 
-So **only two languages have been left out** on our switching computations due to lack of memory on our machines:
+So only two languages have been left out on our switching computations on R due to lack of memory on our machines:
 
-- **Chinese**, with over 40.000 nodes.
-- **Czech**, with over 69.000 nodes.
+- Chinese, with over 40.000 nodes.
+- Czech, with over 69.000 nodes.
 
-Computing the binomial p-value  was **very** slow on those two languages as well due to their size.
+Computing the binomial p-value  was very slow on those two languages as well due to their size.
 
+Not wanting to leave these languages totally out we opted on implementing the switching model on `C++`, which manages the memory resources better and is also more efficient.
 
 
 ## Methods (Switching Method Implementation)
 
-In order to test the data against a NH, we utilized the switching method. This method generates a new random graph with the same degree sequence of the original graph by switching random edges. It ensures no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and, if safe to do so, creates two new edges u ~ t and s ~ v.  
+The switching method generates a new random graph with the same degree sequence of the original graph by switching random edges, as previously explained.
 
-As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to swtich. The adjacnecy matrix was used to check that the switch was safe to make. 
+It ensures that no loops or hyperedges are introduced during the switching process. A switch takes two edges, u ~ v and s ~ t and, if safe to do so, creates two new edges u ~ t and s ~ v.  
+
+As mentioned previously, we utilized two separate data structures to implement this process: an edge list and an adjacency matrix. We used the edgelist to create the edge pairings that we would attempt to switch. The adjacency matrix was used to check that the switch was safe to make. 
 
 To start the process, we first generated two vectors of size QE (E = number of edges, Q = log(E)) with numbers chosen uniformuly at random from 1:E. These acted as the pairs of edges that we would attempt to switch. 
 
 Next, we iterated through each of the edge pairings and checked that they were safe to switch. That is, we checked that self-loops wouldn't be created:
+
 -  t != u
 -  v != s
 
 We also checked that no multiedges would be created:
+
 - Edges s ~ v or u ~ t do not exist. 
 
 If it was safe to do so, we then made the switch. Any failures that occured during this process counted towards the QE switches performed. 
 
 During this process, we ran into prohibitively slow computation times for the Chinese and Czech languages - so slow that we couldn't continue with this implmentation. This was due to the extreme size of the adjacency matrix R created. Therefore, we decided to write the same switching procedure in `C++` and use this for Czech and Chinese. Even with `C++`, performing all 20 iterations of the switching models took upwards of 15min each. 
+
+
+## Final reflections and conclusions
+
+After thinking about the computation times, we realised that we are actually somewhat lucky that the small, original networks we are working on are sparse as seen in table 1. Were they more dense, the switching computation would be slower, even for the small networks such as Arabic or Basque, for they would have way more edges to try a switching on.
+
+The switching method has proved to produce a randomized method closer to the original one, although its computation times is way larger than just computing a Binomimal one. However, this method should be taken into account when you want some specific, randomized network based on another one (i.e. creating a new friendship network based on a real, observed one for research purposes). The Binomial method is fast to compute but not reliable when wanting such specific networks, not to mention that it may create loops and multiedges.
 
 
 
